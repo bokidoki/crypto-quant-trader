@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Quant Trader</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f1419;
+            --card-bg: #1a1f2e;
+            --card-hover: #242b3d;
+            --text-primary: #e8e8e8;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --border-color: #30363d;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Noto Sans, Helvetica, Arial, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(22, 27, 34, 0.95) !important;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, #58a6ff, #3fb950);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.1);
+        }
+
+        .card-header {
+            background: rgba(88, 166, 255, 0.1);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .card-header i {
+            margin-right: 8px;
+            color: var(--accent-blue);
+        }
+
+        .table {
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+
+        .table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom-color: var(--border-color);
+            padding: 12px 8px;
+        }
+
+        .table td {
+            border-bottom-color: rgba(48, 54, 61, 0.5);
+            padding: 12px 8px;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .badge-running {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .badge-stopped {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .badge-connected {
+            background: rgba(88, 166, 255, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+        }
+
+        .badge-disconnected {
+            background: rgba(210, 153, 34, 0.2);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #1f6feb, #388bfd);
+            border: none;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #388bfd, #58a6ff);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #238636, #2ea043);
+            border: none;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(90deg, #2ea043, #3fb950);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, #da3633, #f85149);
+            border: none;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(90deg, #f85149, #ff6b5f);
+            transform: translateY(-1px);
+        }
+
+        .form-control, .form-select {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            border-radius: 8px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: #0d1117;
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .text-profit {
+            color: var(--accent-green) !important;
+        }
+
+        .text-loss {
+            color: var(--accent-red) !important;
+        }
+
+        .text-up {
+            color: var(--accent-green) !important;
+        }
+
+        .text-down {
+            color: var(--accent-red) !important;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .log-container {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 4px 12px;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.3);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+
+        .log-info { color: var(--accent-blue); }
+        .log-success { color: var(--accent-green); }
+        .log-warning { color: var(--accent-yellow); }
+        .log-error { color: var(--accent-red); }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .pulse-dot.active {
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .pulse-dot.inactive {
+            background: var(--accent-red);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); }
+            70% { opacity: 1; box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
+            100% { opacity: 1; box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+        }
+
+        .price-up {
+            animation: flash-green 0.5s;
+        }
+
+        .price-down {
+            animation: flash-red 0.5s;
+        }
+
+        @keyframes flash-green {
+            0% { background: rgba(63, 185, 80, 0.3); }
+            100% { background: transparent; }
+        }
+
+        @keyframes flash-red {
+            0% { background: rgba(248, 81, 73, 0.3); }
+            100% { background: transparent; }
+        }
+
+        .nav-tabs {
+            border-bottom-color: var(--border-color);
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-secondary);
+            border: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: transparent;
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .progress {
+            background: rgba(48, 54, 61, 0.5);
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--card-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .stat-value { font-size: 1.2rem; }
+            .table { font-size: 0.85rem; }
+            .card-header { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-cpu-fill me-2"></i>Crypto Quant Trader
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="badge me-3" id="connectionStatus">
+                    <span class="pulse-dot" id="connectionDot"></span>
+                    <span id="connectionText">连接中...</span>
+                </span>
+                <button class="btn btn-sm btn-outline-light" id="wsStatus" disabled>
+                    <i class="bi bi-wifi me-1"></i>WebSocket
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-3 py-4">
+        <!-- 第一行：系统状态和当前配置 -->
+        <div class="row g-3 mb-3">
+            <!-- 系统状态 -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-activity"></i>系统状态
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(88, 166, 255, 0.05);">
+                                    <div>
+                                        <div class="stat-label">运行状态</div>
+                                        <div class="stat-value" id="engineState">停止</div>
+                                    </div>
+                                    <i class="bi bi-power display-6 text-secondary"></i>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(63, 185, 80, 0.05);">
+                                    <div>
+                                        <div class="stat-label">运行时间</div>
+                                        <div class="stat-value" id="uptime">--:--:--</div>
+                                    </div>
+                                    <i class="bi bi-clock display-6 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(210, 153, 34, 0.05);">
+                                    <div>
+                                        <div class="stat-label">总交易数</div>
+                                        <div class="stat-value" id="totalTrades">0</div>
+                                    </div>
+                                    <i class="bi bi-graph-up display-6" style="color: var(--accent-yellow);"></i>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(248, 81, 73, 0.05);">
+                                    <div>
+                                        <div class="stat-label">错误次数</div>
+                                        <div class="stat-value" id="errorCount">0</div>
+                                    </div>
+                                    <i class="bi bi-exclamation-triangle display-6" style="color: var(--accent-red);"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-success flex-fill" id="btnStart" onclick="startEngine()">
+                                <i class="bi bi-play-fill me-1"></i>启动引擎
+                            </button>
+                            <button class="btn btn-danger flex-fill" id="btnStop" onclick="stopEngine()">
+                                <i class="bi bi-stop-fill me-1"></i>停止引擎
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 交易所连接状态 -->
+            <div class="col-lg-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-hdd-network"></i>交易所连接
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush" id="exchangeList">
+                            <div class="list-group-item bg-transparent text-center text-muted">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <span class="ms-2">正在加载...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 当前配置 -->
+            <div class="col-lg-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-gear-fill"></i>当前配置
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm">
+                            <tbody id="configTable">
+                                <tr>
+                                    <td class="text-secondary">模式</td>
+                                    <td class="text-end"><span class="badge bg-secondary" id="configMode">--</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary">止损</td>
+                                    <td class="text-end" id="configStopLoss">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary">止盈</td>
+                                    <td class="text-end" id="configTakeProfit">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary">最大仓位</td>
+                                    <td class="text-end" id="configMaxPosition">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary">单笔最大</td>
+                                    <td class="text-end" id="configMaxOrder">--</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二行：行情数据和风控信息 -->
+        <div class="row g-3 mb-3">
+            <!-- 行情数据表格 -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-graph-up-arrow"></i>实时行情</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshTickers()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>刷新
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>交易对</th>
+                                        <th class="text-end">最新价</th>
+                                        <th class="text-end">买一价</th>
+                                        <th class="text-end">卖一价</th>
+                                        <th class="text-end">24h 高</th>
+                                        <th class="text-end">24h 低</th>
+                                        <th class="text-end">24h 涨跌</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tickerTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                                            <span class="ms-2">正在加载行情数据...</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 风控信息 -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-shield-check"></i>风控信息
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">当前仓位</span>
+                                <span class="fw-bold" id="currentPosition">0.00 USDT</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" id="positionBar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-3 rounded text-center" style="background: rgba(63, 185, 80, 0.05);">
+                                    <div class="text-secondary small">今日盈亏</div>
+                                    <div class="stat-value text-profit" id="dailyPnl">+0.00</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded text-center" style="background: rgba(88, 166, 255, 0.05);">
+                                    <div class="text-secondary small">今日交易</div>
+                                    <div class="stat-value" id="dailyTrades">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-3 rounded text-center" style="background: rgba(210, 153, 34, 0.05);">
+                                    <div class="text-secondary small">胜率</div>
+                                    <div class="stat-value" id="winRate">0%</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded text-center" style="background: rgba(248, 81, 73, 0.05);">
+                                    <div class="text-secondary small">最大回撤</div>
+                                    <div class="stat-value text-loss" id="maxDrawdown">0%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-top border-secondary pt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">止损线</span>
+                                <span class="text-danger" id="riskStopLoss">-5.00%</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">止盈线</span>
+                                <span class="text-success" id="riskTakeProfit">+10.00%</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-secondary">日亏损限制</span>
+                                <span class="text-warning" id="riskDailyLimit">-2.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三行：订单创建和账户余额 -->
+        <div class="row g-3 mb-3">
+            <!-- 订单创建表单 -->
+            <div class="col-lg-5">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-cart-plus"></i>创建订单
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#marketTab" type="button">
+                                    <i class="bi bi-lightning-fill me-1"></i>市价单
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#limitTab" type="button">
+                                    <i class="bi bi-currency-bitcoin me-1"></i>限价单
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <!-- 市价单 -->
+                            <div class="tab-pane fade show active" id="marketTab">
+                                <form id="marketOrderForm" onsubmit="return false;">
+                                    <div class="mb-3">
+                                        <label class="form-label">交易所</label>
+                                        <select class="form-select" id="marketExchange">
+                                            <option value="binance">Binance (币安)</option>
+                                            <option value="okx">OKX (欧易)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">交易对</label>
+                                        <input type="text" class="form-control" id="marketSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">数量</label>
+                                        <input type="number" class="form-control" id="marketAmount" placeholder="输入交易数量" step="0.001" min="0.001">
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success" onclick="createOrder('market', 'buy')">
+                                            <i class="bi bi-arrow-up me-1"></i>买入做多
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="createOrder('market', 'sell')">
+                                            <i class="bi bi-arrow-down me-1"></i>卖出做空
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 限价单 -->
+                            <div class="tab-pane fade" id="limitTab">
+                                <form id="limitOrderForm" onsubmit="return false;">
+                                    <div class="mb-3">
+                                        <label class="form-label">交易所</label>
+                                        <select class="form-select" id="limitExchange">
+                                            <option value="binance">Binance (币安)</option>
+                                            <option value="okx">OKX (欧易)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">交易对</label>
+                                        <input type="text" class="form-control" id="limitSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">价格</label>
+                                        <input type="number" class="form-control" id="limitPrice" placeholder="输入委托价格" step="0.01" min="0.01">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">数量</label>
+                                        <input type="number" class="form-control" id="limitAmount" placeholder="输入交易数量" step="0.001" min="0.001">
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success" onclick="createOrder('limit', 'buy')">
+                                            <i class="bi bi-arrow-up me-1"></i>买入做多
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="createOrder('limit', 'sell')">
+                                            <i class="bi bi-arrow-down me-1"></i>卖出做空
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 账户余额 -->
+            <div class="col-lg-3">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-wallet2"></i>账户余额</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshBalance()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>交易所</th>
+                                        <th>币种</th>
+                                        <th class="text-end">可用</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="balanceTable">
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">
+                                            <span class="text-secondary">点击刷新按钮加载余额</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最近订单 -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-list-ul"></i>最近订单</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearOrders()">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>交易对</th>
+                                        <th>方向</th>
+                                        <th>数量</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orderTable">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">暂无订单</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四行：运行日志 -->
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-terminal"></i>运行日志</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearLog()">
+                            <i class="bi bi-trash me-1"></i>清空
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="log-container p-2" id="logContainer">
+                            <div class="log-entry">
+                                <span class="log-time">[--:--:--]</span>
+                                <span class="log-info">系统初始化完成，等待连接...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <script>
+        // ============ 全局变量 ============
+        let socket = null;
+        let isConnected = false;
+        let recentOrders = [];
+        const defaultTickers = [
+            { exchange: 'binance', symbol: 'BTC/USDT', name: 'BTC/USDT' },
+            { exchange: 'binance', symbol: 'ETH/USDT', name: 'ETH/USDT' },
+            { exchange: 'binance', symbol: 'BNB/USDT', name: 'BNB/USDT' },
+            { exchange: 'binance', symbol: 'SOL/USDT', name: 'SOL/USDT' }
+        ];
+
+        // ============ WebSocket 连接 ============
+        function initSocket() {
+            socket = io();
+
+            socket.on('connect', () => {
+                isConnected = true;
+                updateConnectionStatus(true);
+                addLog('success', 'WebSocket 已连接');
+                // 连接后获取初始数据
+                setTimeout(() => {
+                    refreshConfig();
+                    refreshExchanges();
+                    refreshTickers();
+                    refreshRisk();
+                }, 500);
+            });
+
+            socket.on('disconnect', () => {
+                isConnected = false;
+                updateConnectionStatus(false);
+                addLog('warning', 'WebSocket 已断开');
+            });
+
+            socket.on('connected', (data) => {
+                addLog('success', data.message || '服务器已连接');
+            });
+
+            socket.on('engine_status', (data) => {
+                updateEngineStatus(data.state);
+            });
+
+            socket.on('ticker_update', (data) => {
+                updateTickerRow(data);
+            });
+
+            socket.on('order_created', (data) => {
+                addLog('success', `订单创建成功：${data.side.toUpperCase()} ${data.amount} ${data.symbol}`);
+                addRecentOrder(data);
+            });
+
+            socket.on('order_filled', (data) => {
+                addLog('success', `订单已成交：${data.id}`);
+                updateOrderStatus(data.id, 'filled');
+                refreshBalance();
+            });
+
+            socket.on('balance_update', (data) => {
+                updateBalanceDisplay(data);
+            });
+
+            socket.on('risk_alert', (data) => {
+                addLog('warning', `风控警告：${data.message}`);
+                updateRiskDisplay(data);
+            });
+
+            socket.on('error', (data) => {
+                addLog('error', data.message || '发生错误');
+            });
+        }
+
+        // ============ UI 更新函数 ============
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connectionDot');
+            const text = document.getElementById('connectionText');
+            const badge = document.getElementById('connectionStatus');
+
+            if (connected) {
+                dot.className = 'pulse-dot active';
+                text.textContent = '已连接';
+                badge.className = 'badge badge-connected me-3';
+            } else {
+                dot.className = 'pulse-dot inactive';
+                text.textContent = '已断开';
+                badge.className = 'badge badge-disconnected me-3';
+            }
+        }
+
+        function updateEngineStatus(state) {
+            const stateEl = document.getElementById('engineState');
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+
+            if (state === 'running') {
+                stateEl.textContent = '运行中';
+                stateEl.className = 'stat-value text-profit';
+                btnStart.disabled = true;
+                btnStart.classList.add('disabled');
+                btnStop.disabled = false;
+                btnStop.classList.remove('disabled');
+            } else {
+                stateEl.textContent = '已停止';
+                stateEl.className = 'stat-value text-loss';
+                btnStart.disabled = false;
+                btnStart.classList.remove('disabled');
+                btnStop.disabled = true;
+                btnStop.classList.add('disabled');
+            }
+        }
+
+        function updateTickerRow(ticker) {
+            const row = document.getElementById(`ticker-${ticker.symbol}`);
+            if (!row) return;
+
+            const priceCell = row.querySelector('.ticker-price');
+            const changeCell = row.querySelector('.ticker-change');
+            const prevPrice = parseFloat(priceCell.dataset.price || 0);
+
+            // 价格变化动画
+            if (ticker.last > prevPrice) {
+                priceCell.classList.add('price-up');
+                setTimeout(() => priceCell.classList.remove('price-up'), 500);
+            } else if (ticker.last < prevPrice) {
+                priceCell.classList.add('price-down');
+                setTimeout(() => priceCell.classList.remove('price-down'), 500);
+            }
+
+            priceCell.textContent = formatPrice(ticker.last);
+            priceCell.dataset.price = ticker.last;
+
+            if (changeCell) {
+                const change = ticker.change || 0;
+                const sign = change >= 0 ? '+' : '';
+                changeCell.textContent = `${sign}${change.toFixed(2)}%`;
+                changeCell.className = `ticker-change ${change >= 0 ? 'text-up' : 'text-down'}`;
+            }
+        }
+
+        function updateBalanceDisplay(balances) {
+            const tbody = document.getElementById('balanceTable');
+            let html = '';
+
+            for (const [exchange, data] of Object.entries(balances)) {
+                if (data.error) {
+                    html += `<tr><td colspan="3" class="text-danger">${exchange}: ${data.error}</td></tr>`;
+                    continue;
+                }
+                for (const [currency, info] of Object.entries(data)) {
+                    if (info.free > 0 || info.total > 0) {
+                        html += `
+                            <tr>
+                                <td><span class="badge bg-secondary">${exchange}</span></td>
+                                <td>${currency}</td>
+                                <td class="text-end fw-bold">${formatNumber(info.free, 4)}</td>
+                            </tr>
+                        `;
+                    }
+                }
+            }
+
+            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center text-muted py-3">暂无余额数据</td></tr>';
+        }
+
+        function updateRiskDisplay(risk) {
+            const pnl = risk.daily_pnl || 0;
+            document.getElementById('dailyPnl').textContent = `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`;
+            document.getElementById('dailyPnl').className = `stat-value ${pnl >= 0 ? 'text-profit' : 'text-loss'}`;
+
+            document.getElementById('dailyTrades').textContent = risk.daily_trades || 0;
+            document.getElementById('currentPosition').textContent = `${(risk.total_positions || 0).toFixed(2)} USDT`;
+            document.getElementById('winRate').textContent = `${(risk.win_rate || 0).toFixed(1)}%`;
+            document.getElementById('maxDrawdown').textContent = `${(risk.max_drawdown || 0).toFixed(2)}%`;
+
+            // 仓位进度条
+            const maxPos = risk.max_position || 1000;
+            const currPos = risk.total_positions || 0;
+            const posPercent = Math.min((currPos / maxPos) * 100, 100);
+            document.getElementById('positionBar').style.width = `${posPercent}%`;
+        }
+
+        function addRecentOrder(order) {
+            recentOrders.unshift({
+                time: new Date().toLocaleTimeString(),
+                symbol: order.symbol,
+                side: order.side,
+                amount: order.amount,
+                status: order.status || 'pending'
+            });
+
+            // 只保留最近 10 条
+            if (recentOrders.length > 10) recentOrders.pop();
+
+            renderRecentOrders();
+        }
+
+        function updateOrderStatus(orderId, status) {
+            const order = recentOrders.find(o => o.id === orderId);
+            if (order) order.status = status;
+            renderRecentOrders();
+        }
+
+        function renderRecentOrders() {
+            const tbody = document.getElementById('orderTable');
+            if (recentOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">暂无订单</td></tr>';
+                return;
+            }
+
+            let html = '';
+            for (const order of recentOrders) {
+                const statusClass = order.status === 'filled' ? 'text-success' :
+                                   order.status === 'cancelled' ? 'text-secondary' : 'text-warning';
+                const statusText = order.status === 'filled' ? '已成交' :
+                                  order.status === 'cancelled' ? '已取消' : '处理中';
+                html += `
+                    <tr>
+                        <td class="text-muted small">${order.time}</td>
+                        <td>${order.symbol}</td>
+                        <td class="${order.side === 'buy' ? 'text-success' : 'text-danger'}">${order.side === 'buy' ? '买入' : '卖出'}</td>
+                        <td>${formatNumber(order.amount, 4)}</td>
+                        <td class="${statusClass}">${statusText}</td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+
+        function clearOrders() {
+            recentOrders = [];
+            renderRecentOrders();
+        }
+
+        // ============ 数据刷新函数 ============
+        async function refreshConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+
+                // 模式
+                const mode = data.risk?.enabled ? '实盘' : '测试';
+                document.getElementById('configMode').textContent = mode;
+                document.getElementById('configMode').className = `badge ${data.risk?.enabled ? 'bg-success' : 'bg-warning text-dark'}`;
+
+                // 风控参数
+                document.getElementById('configStopLoss').textContent = `-${((data.risk?.stop_loss_percent || 0.05) * 100).toFixed(1)}%`;
+                document.getElementById('configTakeProfit').textContent = `+${((data.risk?.take_profit_percent || 0.1) * 100).toFixed(1)}%`;
+                document.getElementById('configMaxPosition').textContent = `${data.risk?.max_position_size || 'N/A'} USDT`;
+                document.getElementById('configMaxOrder').textContent = `${data.risk?.max_order_size || 'N/A'} USDT`;
+
+                // 更新风控面板
+                document.getElementById('riskStopLoss').textContent = `-${((data.risk?.stop_loss_percent || 0.05) * 100).toFixed(2)}%`;
+                document.getElementById('riskTakeProfit').textContent = `+${((data.risk?.take_profit_percent || 0.1) * 100).toFixed(2)}%`;
+
+                addLog('info', '配置已更新');
+            } catch (error) {
+                addLog('error', `获取配置失败：${error.message}`);
+            }
+        }
+
+        async function refreshExchanges() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                const tbody = document.getElementById('exchangeList');
+
+                if (data.exchanges && Object.keys(data.exchanges).length > 0) {
+                    let html = '';
+                    for (const [name, info] of Object.entries(data.exchanges)) {
+                        const connected = info.connected || info.status === 'connected';
+                        html += `
+                            <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                <span class="text-capitalize">${name}</span>
+                                <span class="badge ${connected ? 'badge-connected' : 'badge-disconnected'}">
+                                    ${connected ? '<i class="bi bi-check-circle-fill me-1"></i>已连接' : '<i class="bi bi-x-circle-fill me-1"></i>断开'}
+                                </span>
+                            </div>
+                        `;
+                    }
+                    tbody.innerHTML = html;
+                } else {
+                    tbody.innerHTML = `
+                        <div class="list-group-item bg-transparent text-center text-muted">
+                            暂无交易所连接信息
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('exchangeList').innerHTML = `
+                    <div class="list-group-item bg-transparent text-center text-danger">
+                        <i class="bi bi-exclamation-triangle me-1"></i>加载失败
+                    </div>
+                `;
+            }
+        }
+
+        async function refreshTickers() {
+            const tbody = document.getElementById('tickerTable');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2 text-muted">加载中...</span></td></tr>';
+
+            let html = '';
+            for (const ticker of defaultTickers) {
+                try {
+                    const response = await fetch(`/api/ticker/${ticker.exchange}/${encodeURIComponent(ticker.symbol)}`);
+                    const data = await response.json();
+
+                    if (data.error) {
+                        html += `
+                            <tr id="ticker-${ticker.symbol}">
+                                <td>${ticker.name}</td>
+                                <td colspan="6" class="text-danger text-center">数据获取失败</td>
+                            </tr>
+                        `;
+                    } else {
+                        const changeClass = (data.change || 0) >= 0 ? 'text-up' : 'text-down';
+                        const changeSign = (data.change || 0) >= 0 ? '+' : '';
+                        html += `
+                            <tr id="ticker-${ticker.symbol}">
+                                <td class="fw-bold">${ticker.name}</td>
+                                <td class="text-end ticker-price" data-price="${data.last}">${formatPrice(data.last)}</td>
+                                <td class="text-end">${formatPrice(data.bid || 0)}</td>
+                                <td class="text-end">${formatPrice(data.ask || 0)}</td>
+                                <td class="text-end text-muted">${formatPrice(data.high || 0)}</td>
+                                <td class="text-end text-muted">${formatPrice(data.low || 0)}</td>
+                                <td class="text-end ${changeClass}">${changeSign}${(data.change || 0).toFixed(2)}%</td>
+                            </tr>
+                        `;
+                    }
+                } catch (error) {
+                    html += `
+                        <tr id="ticker-${ticker.symbol}">
+                            <td>${ticker.name}</td>
+                            <td colspan="6" class="text-danger text-center">请求失败</td>
+                        </tr>
+                    `;
+                }
+            }
+            tbody.innerHTML = html || '<tr><td colspan="7" class="text-center text-muted py-4">暂无行情数据</td></tr>';
+        }
+
+        async function refreshBalance() {
+            try {
+                const response = await fetch('/api/balance');
+                const data = await response.json();
+                updateBalanceDisplay(data);
+                addLog('info', '余额已更新');
+            } catch (error) {
+                addLog('error', `获取余额失败：${error.message}`);
+            }
+        }
+
+        async function refreshRisk() {
+            try {
+                const response = await fetch('/api/risk');
+                const data = await response.json();
+                if (!data.error) {
+                    updateRiskDisplay(data);
+                }
+            } catch (error) {
+                // 静默失败
+            }
+        }
+
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                document.getElementById('engineState').textContent = data.state === 'running' ? '运行中' : '已停止';
+                document.getElementById('engineState').className = `stat-value ${data.state === 'running' ? 'text-profit' : 'text-loss'}`;
+                document.getElementById('uptime').textContent = data.uptime || '--:--:--';
+                document.getElementById('totalTrades').textContent = data.stats?.total_trades || 0;
+                document.getElementById('errorCount').textContent = data.stats?.errors || 0;
+
+                updateEngineStatus(data.state);
+            } catch (error) {
+                // 静默失败
+            }
+        }
+
+        // ============ 操作函数 ============
+        function startEngine() {
+            socket.emit('start_engine');
+            addLog('info', '正在启动交易引擎...');
+        }
+
+        function stopEngine() {
+            socket.emit('stop_engine');
+            addLog('warning', '正在停止交易引擎...');
+        }
+
+        function createOrder(type, side) {
+            const prefix = type === 'market' ? 'market' : 'limit';
+            const exchange = document.getElementById(`${prefix}Exchange`).value;
+            const symbol = document.getElementById(`${prefix}Symbol`).value;
+            const amount = parseFloat(document.getElementById(`${prefix}Amount`).value);
+            const price = type === 'limit' ? parseFloat(document.getElementById(`${prefix}Price`).value) : null;
+
+            // 验证
+            if (!symbol) {
+                addLog('error', '请输入交易对');
+                return false;
+            }
+            if (!amount || amount <= 0) {
+                addLog('error', '请输入有效的数量');
+                return false;
+            }
+            if (type === 'limit' && (!price || price <= 0)) {
+                addLog('error', '请输入有效的价格');
+                return false;
+            }
+
+            const orderData = {
+                exchange,
+                symbol,
+                side,
+                type,
+                amount,
+                price
+            };
+
+            addLog('info', `发送${side === 'buy' ? '买入' : '卖出'}订单：${amount} ${symbol} @ ${type === 'market' ? '市价' : price}`);
+
+            fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    addLog('error', `订单失败：${data.error}`);
+                } else {
+                    addLog('success', data.message || '订单已提交');
+                    if (data.order) {
+                        addRecentOrder(data.order);
+                    }
+                }
+            })
+            .catch(error => {
+                addLog('error', `请求失败：${error.message}`);
+            });
+
+            return false;
+        }
+
+        // ============ 日志函数 ============
+        function addLog(level, message) {
+            const container = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-${level}">${message}</span>`;
+
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+
+            // 限制日志条数
+            while (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function clearLog() {
+            const container = document.getElementById('logContainer');
+            container.innerHTML = '<div class="log-entry"><span class="log-time">[' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + ']</span><span class="log-info">日志已清空</span></div>';
+        }
+
+        // ============ 工具函数 ============
+        function formatPrice(price) {
+            if (!price) return '0.00';
+            price = parseFloat(price);
+            if (price >= 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (price >= 1) return price.toFixed(4);
+            return price.toFixed(6);
+        }
+
+        function formatNumber(num, decimals = 2) {
+            if (!num) return '0';
+            return parseFloat(num).toFixed(decimals);
+        }
+
+        // ============ 初始化 ============
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化 WebSocket
+            initSocket();
+
+            // 定时刷新
+            setInterval(refreshStatus, 3000);  // 3 秒刷新状态
+            setInterval(refreshRisk, 5000);    // 5 秒刷新风控
+            setInterval(refreshTickers, 4000); // 4 秒刷新行情
+
+            // 初始加载
+            addLog('info', '页面加载完成');
+            refreshStatus();
+        });
+    </script>
+</body>
+</html>

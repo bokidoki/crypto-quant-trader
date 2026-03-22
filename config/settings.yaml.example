@@ -1,0 +1,53 @@
+# Crypto Quant Trader 配置文件
+# 复制此文件为 settings.yaml 并填入实际值
+
+# 运行模式: testnet / mainnet
+mode: testnet
+
+# 代理设置（国内必需）
+proxy:
+  enabled: true
+  http: "http://127.0.0.1:10801"
+  https: "http://127.0.0.1:10801"
+
+# Binance 配置
+binance:
+  enabled: true
+  testnet: true
+  api_key: "YOUR_BINANCE_API_KEY"
+  api_secret: "YOUR_BINANCE_API_SECRET"
+  # 测试网申请地址: https://testnet.binance.vision/
+
+# OKX 配置
+okx:
+  enabled: true
+  simulated: true  # 模拟盘
+  api_key: "YOUR_OKX_API_KEY"
+  api_secret: "YOUR_OKX_API_SECRET"
+  passphrase: "YOUR_OKX_PASSPHRASE"
+  # 模拟盘申请地址: OKX App -> 交易 -> 模拟交易
+
+# 风控配置
+risk:
+  # 单笔最大仓位（USDT）
+  max_position: 100
+  # 单日最大亏损（USDT）
+  max_daily_loss: 50
+  # 止损比例（%）
+  stop_loss_percent: 5
+  # 止盈比例（%）
+  take_profit_percent: 10
+
+# 通知配置
+notification:
+  feishu:
+    enabled: true
+    webhook: "YOUR_FEISHU_WEBHOOK_URL"
+  # 或使用 OpenClaw 脚本
+  script: "D:\\workflow\\scripts\\feishu-send.js"
+
+# 日志配置
+logging:
+  level: INFO
+  file: "logs/trader.log"
+  rotation: "10 MB"
