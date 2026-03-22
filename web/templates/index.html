@@ -750,14 +750,21 @@
                 const response = await fetch('/api/status');
                 const data = await response.json();
                 const tbody = document.getElementById('exchangeList');
+                
+                // 交易所名称映射
+                const exchangeNames = {
+                    'binance': 'Binance',
+                    'okx': 'OKX'
+                };
 
                 if (data.exchanges && Object.keys(data.exchanges).length > 0) {
                     let html = '';
                     for (const [name, info] of Object.entries(data.exchanges)) {
                         const connected = info.connected || info.status === 'connected';
+                        const displayName = exchangeNames[name] || name;
                         html += `
                             <div class="p-3 bg-transparent flex items-center justify-between">
-                                <span class="capitalize text-gray-300">${name}</span>
+                                <span class="text-gray-300">${displayName}</span>
                                 <span class="px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-blue-500/20 text-primary border border-primary' : 'bg-yellow-500/20 text-warning border border-warning'}">
                                     ${connected ? '<i class="bi bi-check-circle-fill me-1"></i>已连接' : '<i class="bi bi-x-circle-fill me-1"></i>断开'}
                                 </span>
@@ -855,7 +862,19 @@
 
                 document.getElementById('engineState').textContent = data.state === 'running' ? '运行中' : '已停止';
                 document.getElementById('engineState').className = `text-2xl font-bold ${data.state === 'running' ? 'text-success' : 'text-danger'}`;
-                document.getElementById('uptime').textContent = data.uptime || '--:--:--';
+                
+                // 运行时间只显示时:分，降低跳动频率感
+                if (data.uptime) {
+                    const parts = data.uptime.split(':');
+                    if (parts.length >= 2) {
+                        document.getElementById('uptime').textContent = parts[0] + ':' + parts[1];
+                    } else {
+                        document.getElementById('uptime').textContent = data.uptime;
+                    }
+                } else {
+                    document.getElementById('uptime').textContent = '--:--';
+                }
+                
                 document.getElementById('totalTrades').textContent = data.stats?.total_trades || 0;
                 document.getElementById('errorCount').textContent = data.stats?.errors || 0;
 
