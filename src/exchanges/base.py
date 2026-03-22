@@ -97,6 +97,8 @@ class Ticker:
     low: float
     volume: float
     timestamp: datetime = None
+    quote_volume: float = 0.0  # 成交额
+    open_price: float = 0.0    # 开盘价
     
     def __post_init__(self):
         if self.timestamp is None:
@@ -114,6 +116,8 @@ class KLine:
     low: float
     close: float
     volume: float
+    quote_volume: float = 0.0  # 成交额
+    is_closed: bool = True     # K 线是否已闭合
 
 
 class BaseExchange(ABC):
