@@ -267,8 +267,17 @@ def handle_start_engine():
         emit("error", {"message": "引擎未初始化"})
         return
     
-    run_async(engine.start())
-    emit("engine_status", {"state": engine.state.value})
+    async def _start():
+        try:
+            await engine.start()
+            # 启动成功后推送状态
+            socketio.emit("engine_status", {"state": engine.state.value})
+            logger.info(f"引擎已启动，状态: {engine.state.value}")
+        except Exception as e:
+            logger.error(f"引擎启动失败: {e}")
+            socketio.emit("error", {"message": f"引擎启动失败: {str(e)}"})
+    
+    run_async(_start())
 
 
 @socketio.on("stop_engine")
@@ -278,11 +287,51 @@ def handle_stop_engine():
         emit("error", {"message": "引擎未初始化"})
         return
     
-    run_async(engine.stop())
-    emit("engine_status", {"state": engine.state.value})
+    async def _stop():
+        try:
+            await engine.stop()
+            # 停止成功后推送状态
+            socketio.emit("engine_status", {"state": engine.state.value})
+            logger.info(f"引擎已停止，状态: {engine.state.value}")
+        except Exception as e:
+            logger.error(f"引擎停止失败: {e}")
+            socketio.emit("error", {"message": f"引擎停止失败: {str(e)}"})
+    
+    run_async(_stop())
 
 
 # ============ 启动 ============
+
+async def init_engine():
+    """初始化引擎"""
+    global engine
+    
+    settings = get_settings()
+    engine = TradingEngine()
+    
+    # 注册交易所
+    if settings.binance.enabled:
+        from src.exchanges.binance import BinanceExchange
+        binance = BinanceExchange()
+        engine.register_exchange("binance", binance)
+        logger.info("Binance 交易所已注册")
+    
+    if settings.okx.enabled:
+        from src.exchanges.okx import OKXExchange
+        okx = OKXExchange()
+        engine.register_exchange("okx", okx)
+        logger.info("OKX 交易所已注册")
+    
+    # 连接交易所
+    for name, exchange in engine.exchanges.items():
+        try:
+            await exchange.connect()
+            logger.info(f"{name} 已连接")
+        except Exception as e:
+            logger.error(f"{name} 连接失败: {e}")
+    
+    return engine
+
 
 def create_app(trading_engine: TradingEngine = None):
     """创建应用"""
@@ -294,6 +343,11 @@ def create_app(trading_engine: TradingEngine = None):
 def run_server(host: str = "0.0.0.0", port: int = 5000):
     """运行服务器"""
     setup_logging()
+    
+    # 初始化引擎
+    logger.info("初始化交易引擎...")
+    run_async(init_engine())
+    
     logger.info(f"Web 服务器启动: http://{host}:{port}")
     socketio.run(app, host=host, port=port, debug=True, allow_unsafe_werkzeug=True)
 

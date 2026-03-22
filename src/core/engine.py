@@ -91,13 +91,16 @@ class TradingEngine:
             return
 
         self.state = EngineState.STARTING
-        logger.info("🚀 交易引擎启动中...")
+        logger.info("交易引擎启动中...")
 
         try:
-            # 初始化交易所连接
+            # 初始化交易所连接（跳过已连接的）
             for name, exchange in self.exchanges.items():
-                await exchange.connect()
-                logger.info(f"交易所已连接：{name}")
+                if hasattr(exchange, 'connected') and not exchange.connected:
+                    await exchange.connect()
+                    logger.info(f"交易所已连接：{name}")
+                elif hasattr(exchange, 'connected') and exchange.connected:
+                    logger.info(f"交易所已连接（跳过）：{name}")
 
             # 初始化策略
             for name, strategy in self.strategies.items():
@@ -130,18 +133,20 @@ class TradingEngine:
             return
 
         self.state = EngineState.STOPPING
-        logger.info("🛑 交易引擎停止中...")
+        logger.info("交易引擎停止中...")
 
         try:
             # 停止策略
             for name, strategy in self.strategies.items():
-                await strategy.stop()
-                logger.info(f"策略已停止：{name}")
+                if hasattr(strategy, 'stop'):
+                    await strategy.stop()
+                    logger.info(f"策略已停止：{name}")
 
-            # 断开交易所连接
+            # 断开交易所连接（只断开已连接的）
             for name, exchange in self.exchanges.items():
-                await exchange.disconnect()
-                logger.info(f"交易所已断开：{name}")
+                if hasattr(exchange, 'connected') and exchange.connected:
+                    await exchange.disconnect()
+                    logger.info(f"交易所已断开：{name}")
 
             self.state = EngineState.STOPPED
             logger.info("✅ 交易引擎已停止")
