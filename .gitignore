@@ -37,8 +37,8 @@ env/
 logs/
 *.log
 
-# Local data
-data/
+# Local data (only root data directory)
+/data/
 *.db
 *.sqlite
 
