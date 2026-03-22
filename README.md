@@ -95,11 +95,17 @@ python web\app.py
 ## 开发计划
 
 - [x] Phase 1: 基础框架
-- [ ] Phase 2: 交易所接口
-- [ ] Phase 3: 策略框架
-- [ ] Phase 4: 风控模块
+- [x] Phase 2: 交易所接口
+- [x] Phase 3: 策略框架
+- [x] Phase 4: 风控模块
 - [x] Phase 5: OpenClaw 集成
-- [ ] Phase 6: Web 界面
+- [x] Phase 6: Web 界面
+
+### 额外完成
+
+- [x] WebSocket 行情订阅
+- [x] 单元测试
+- [x] 数据存储模块
 
 ## License
 
