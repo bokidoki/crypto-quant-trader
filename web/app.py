@@ -2,14 +2,18 @@
 Web 界面 - Flask 应用
 """
 import asyncio
+import sys
+from pathlib import Path
 from datetime import datetime
+
+# 添加项目根目录到 Python 路径
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from loguru import logger
-
-import sys
-sys.path.insert(0, "..")
 
 from src.core.engine import TradingEngine, EngineState
 from src.core.config import get_settings, load_settings
@@ -291,7 +295,7 @@ def run_server(host: str = "0.0.0.0", port: int = 5000):
     """运行服务器"""
     setup_logging()
     logger.info(f"Web 服务器启动: http://{host}:{port}")
-    socketio.run(app, host=host, port=port, debug=True)
+    socketio.run(app, host=host, port=port, debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == "__main__":

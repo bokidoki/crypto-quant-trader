@@ -1,266 +1,34 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Quant Trader</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#58a6ff',
+                        success: '#3fb950',
+                        danger: '#f85149',
+                        warning: '#d29922',
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #0f1419;
-            --card-bg: #1a1f2e;
-            --card-hover: #242b3d;
-            --text-primary: #e8e8e8;
-            --text-secondary: #8b949e;
-            --accent-blue: #58a6ff;
-            --accent-green: #3fb950;
-            --accent-red: #f85149;
-            --accent-yellow: #d29922;
-            --border-color: #30363d;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Noto Sans, Helvetica, Arial, sans-serif;
-        }
-
-        .navbar {
-            background: rgba(22, 27, 34, 0.95) !important;
-            border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
-        }
-
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.4rem;
-            background: linear-gradient(90deg, #58a6ff, #3fb950);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .card:hover {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 20px rgba(88, 166, 255, 0.1);
-        }
-
-        .card-header {
-            background: rgba(88, 166, 255, 0.1);
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .card-header i {
-            margin-right: 8px;
-            color: var(--accent-blue);
-        }
-
-        .table {
-            color: var(--text-primary);
-            margin-bottom: 0;
-        }
-
-        .table th {
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            border-bottom-color: var(--border-color);
-            padding: 12px 8px;
-        }
-
-        .table td {
-            border-bottom-color: rgba(48, 54, 61, 0.5);
-            padding: 12px 8px;
-            vertical-align: middle;
-        }
-
-        .table-hover tbody tr:hover {
-            background: rgba(88, 166, 255, 0.05);
-        }
-
-        .badge-running {
-            background: rgba(63, 185, 80, 0.2);
-            color: var(--accent-green);
-            border: 1px solid var(--accent-green);
-        }
-
-        .badge-stopped {
-            background: rgba(248, 81, 73, 0.2);
-            color: var(--accent-red);
-            border: 1px solid var(--accent-red);
-        }
-
-        .badge-connected {
-            background: rgba(88, 166, 255, 0.2);
-            color: var(--accent-blue);
-            border: 1px solid var(--accent-blue);
-        }
-
-        .badge-disconnected {
-            background: rgba(210, 153, 34, 0.2);
-            color: var(--accent-yellow);
-            border: 1px solid var(--accent-yellow);
-        }
-
-        .btn-primary {
-            background: linear-gradient(90deg, #1f6feb, #388bfd);
-            border: none;
-            font-weight: 500;
-            padding: 8px 20px;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(90deg, #388bfd, #58a6ff);
-            transform: translateY(-1px);
-        }
-
-        .btn-success {
-            background: linear-gradient(90deg, #238636, #2ea043);
-            border: none;
-            font-weight: 500;
-            padding: 8px 20px;
-        }
-
-        .btn-success:hover {
-            background: linear-gradient(90deg, #2ea043, #3fb950);
-            transform: translateY(-1px);
-        }
-
-        .btn-danger {
-            background: linear-gradient(90deg, #da3633, #f85149);
-            border: none;
-            font-weight: 500;
-            padding: 8px 20px;
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(90deg, #f85149, #ff6b5f);
-            transform: translateY(-1px);
-        }
-
-        .form-control, .form-select {
-            background: #0d1117;
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 10px 14px;
-            border-radius: 8px;
-        }
-
-        .form-control:focus, .form-select:focus {
-            background: #0d1117;
-            border-color: var(--accent-blue);
-            color: var(--text-primary);
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-        }
-
-        .form-control::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .form-label {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-bottom: 6px;
-        }
-
-        .text-profit {
-            color: var(--accent-green) !important;
-        }
-
-        .text-loss {
-            color: var(--accent-red) !important;
-        }
-
-        .text-up {
-            color: var(--accent-green) !important;
-        }
-
-        .text-down {
-            color: var(--accent-red) !important;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .log-container {
-            background: #0d1117;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 0.8rem;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .log-entry {
-            padding: 4px 12px;
-            border-bottom: 1px solid rgba(48, 54, 61, 0.3);
-        }
-
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-
-        .log-time {
-            color: var(--text-secondary);
-            margin-right: 10px;
-        }
-
-        .log-info { color: var(--accent-blue); }
-        .log-success { color: var(--accent-green); }
-        .log-warning { color: var(--accent-yellow); }
-        .log-error { color: var(--accent-red); }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-        }
-
-        .pulse-dot.active {
-            background: var(--accent-green);
-            animation: pulse 2s infinite;
-        }
-
-        .pulse-dot.inactive {
-            background: var(--accent-red);
-        }
-
+        /* 自定义动画 */
         @keyframes pulse {
             0% { opacity: 1; box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); }
             70% { opacity: 1; box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
             100% { opacity: 1; box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
-        }
-
-        .price-up {
-            animation: flash-green 0.5s;
-        }
-
-        .price-down {
-            animation: flash-red 0.5s;
         }
 
         @keyframes flash-green {
@@ -273,36 +41,21 @@
             100% { background: transparent; }
         }
 
-        .nav-tabs {
-            border-bottom-color: var(--border-color);
+        .pulse-dot.active {
+            background: #3fb950;
+            animation: pulse 2s infinite;
         }
 
-        .nav-tabs .nav-link {
-            color: var(--text-secondary);
-            border: none;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
+        .pulse-dot.inactive {
+            background: #f85149;
         }
 
-        .nav-tabs .nav-link:hover {
-            color: var(--text-primary);
-            border-bottom-color: var(--accent-blue);
+        .price-up {
+            animation: flash-green 0.5s;
         }
 
-        .nav-tabs .nav-link.active {
-            background: transparent;
-            color: var(--accent-blue);
-            border-bottom-color: var(--accent-blue);
-        }
-
-        .progress {
-            background: rgba(48, 54, 61, 0.5);
-            height: 8px;
-            border-radius: 4px;
-        }
-
-        .progress-bar {
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+        .price-down {
+            animation: flash-red 0.5s;
         }
 
         /* 滚动条样式 */
@@ -312,101 +65,89 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--card-bg);
+            background: #1e293b;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
+            background: #475569;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
-
-        /* 响应式调整 */
-        @media (max-width: 768px) {
-            .stat-value { font-size: 1.2rem; }
-            .table { font-size: 0.85rem; }
-            .card-header { font-size: 0.9rem; }
+            background: #64748b;
         }
     </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 min-h-screen text-gray-100 font-sans">
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-        <div class="container-fluid px-3">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-cpu-fill me-2"></i>Crypto Quant Trader
-            </a>
-            <div class="d-flex align-items-center">
-                <span class="badge me-3" id="connectionStatus">
-                    <span class="pulse-dot" id="connectionDot"></span>
-                    <span id="connectionText">连接中...</span>
-                </span>
-                <button class="btn btn-sm btn-outline-light" id="wsStatus" disabled>
-                    <i class="bi bi-wifi me-1"></i>WebSocket
-                </button>
+    <nav class="sticky-top bg-slate-900/95 border-b border-gray-700 backdrop-blur-sm">
+        <div class="container-fluid px-4 py-3">
+            <div class="flex items-center justify-between">
+                <a class="text-2xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent" href="#">
+                    <i class="bi bi-cpu-fill me-2"></i>Crypto Quant Trader
+                </a>
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 rounded-full bg-blue-500/20 text-primary border border-primary inline-flex items-center gap-2" id="connectionStatus">
+                        <span class="pulse-dot w-2 h-2 rounded-full" id="connectionDot"></span>
+                        <span id="connectionText" class="text-sm">连接中...</span>
+                    </span>
+                    <button class="px-3 py-1 text-sm border border-gray-600 rounded hover:bg-gray-700 transition-colors" id="wsStatus" disabled>
+                        <i class="bi bi-wifi me-1"></i>WebSocket
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid px-3 py-4">
+    <div class="container-fluid px-4 py-4">
         <!-- 第一行：系统状态和当前配置 -->
-        <div class="row g-3 mb-3">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
             <!-- 系统状态 -->
-            <div class="col-lg-6">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-activity"></i>系统状态
+            <div class="lg:col-span-6">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center gap-2">
+                        <i class="bi bi-activity text-primary"></i>
+                        <span class="font-semibold">系统状态</span>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(88, 166, 255, 0.05);">
-                                    <div>
-                                        <div class="stat-label">运行状态</div>
-                                        <div class="stat-value" id="engineState">停止</div>
-                                    </div>
-                                    <i class="bi bi-power display-6 text-secondary"></i>
+                    <div class="p-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-primary/5 rounded-lg p-4 flex items-center justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm">运行状态</div>
+                                    <div class="text-2xl font-bold" id="engineState">停止</div>
                                 </div>
+                                <i class="bi bi-power text-4xl text-gray-500"></i>
                             </div>
-                            <div class="col-6">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(63, 185, 80, 0.05);">
-                                    <div>
-                                        <div class="stat-label">运行时间</div>
-                                        <div class="stat-value" id="uptime">--:--:--</div>
-                                    </div>
-                                    <i class="bi bi-clock display-6 text-success"></i>
+                            <div class="bg-success/5 rounded-lg p-4 flex items-center justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm">运行时间</div>
+                                    <div class="text-2xl font-bold" id="uptime">--:--:--</div>
                                 </div>
+                                <i class="bi bi-clock text-4xl text-success"></i>
                             </div>
                         </div>
-                        <div class="row g-3 mt-1">
-                            <div class="col-6">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(210, 153, 34, 0.05);">
-                                    <div>
-                                        <div class="stat-label">总交易数</div>
-                                        <div class="stat-value" id="totalTrades">0</div>
-                                    </div>
-                                    <i class="bi bi-graph-up display-6" style="color: var(--accent-yellow);"></i>
+                        <div class="grid grid-cols-2 gap-3 mt-3">
+                            <div class="bg-warning/5 rounded-lg p-4 flex items-center justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm">总交易数</div>
+                                    <div class="text-2xl font-bold" id="totalTrades">0</div>
                                 </div>
+                                <i class="bi bi-graph-up text-4xl" style="color: #d29922;"></i>
                             </div>
-                            <div class="col-6">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: rgba(248, 81, 73, 0.05);">
-                                    <div>
-                                        <div class="stat-label">错误次数</div>
-                                        <div class="stat-value" id="errorCount">0</div>
-                                    </div>
-                                    <i class="bi bi-exclamation-triangle display-6" style="color: var(--accent-red);"></i>
+                            <div class="bg-danger/5 rounded-lg p-4 flex items-center justify-between">
+                                <div>
+                                    <div class="text-gray-400 text-sm">错误次数</div>
+                                    <div class="text-2xl font-bold" id="errorCount">0</div>
                                 </div>
+                                <i class="bi bi-exclamation-triangle text-4xl text-danger"></i>
                             </div>
                         </div>
-                        <div class="mt-3 d-flex gap-2">
-                            <button class="btn btn-success flex-fill" id="btnStart" onclick="startEngine()">
-                                <i class="bi bi-play-fill me-1"></i>启动引擎
+                        <div class="flex gap-2 mt-4">
+                            <button class="flex-1 bg-gradient-to-r from-success to-green-500 hover:from-green-500 hover:to-success text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" id="btnStart" onclick="startEngine()">
+                                <i class="bi bi-play-fill"></i>启动引擎
                             </button>
-                            <button class="btn btn-danger flex-fill" id="btnStop" onclick="stopEngine()">
-                                <i class="bi bi-stop-fill me-1"></i>停止引擎
+                            <button class="flex-1 bg-gradient-to-r from-danger to-red-500 hover:from-red-500 hover:to-danger text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" id="btnStop" onclick="stopEngine()">
+                                <i class="bi bi-stop-fill"></i>停止引擎
                             </button>
                         </div>
                     </div>
@@ -414,18 +155,17 @@
             </div>
 
             <!-- 交易所连接状态 -->
-            <div class="col-lg-3">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-hdd-network"></i>交易所连接
+            <div class="lg:col-span-3">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center gap-2">
+                        <i class="bi bi-hdd-network"></i>
+                        <span class="font-semibold">交易所连接</span>
                     </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush" id="exchangeList">
-                            <div class="list-group-item bg-transparent text-center text-muted">
-                                <div class="spinner-border spinner-border-sm" role="status">
-                                    <span class="visually-hidden">加载中...</span>
-                                </div>
-                                <span class="ms-2">正在加载...</span>
+                    <div class="p-0">
+                        <div class="divide-y divide-gray-700" id="exchangeList">
+                            <div class="p-3 bg-transparent text-center text-gray-500 flex items-center justify-center gap-2">
+                                <div class="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                                <span>正在加载...</span>
                             </div>
                         </div>
                     </div>
@@ -433,33 +173,34 @@
             </div>
 
             <!-- 当前配置 -->
-            <div class="col-lg-3">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-gear-fill"></i>当前配置
+            <div class="lg:col-span-3">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center gap-2">
+                        <i class="bi bi-gear-fill"></i>
+                        <span class="font-semibold">当前配置</span>
                     </div>
-                    <div class="card-body p-0">
-                        <table class="table table-sm">
-                            <tbody id="configTable">
+                    <div class="p-0">
+                        <table class="w-full">
+                            <tbody id="configTable" class="divide-y divide-gray-700">
                                 <tr>
-                                    <td class="text-secondary">模式</td>
-                                    <td class="text-end"><span class="badge bg-secondary" id="configMode">--</span></td>
+                                    <td class="p-3 text-gray-400">模式</td>
+                                    <td class="p-3 text-right"><span class="px-2 py-1 rounded text-xs font-medium bg-gray-500 text-white" id="configMode">--</span></td>
                                 </tr>
                                 <tr>
-                                    <td class="text-secondary">止损</td>
-                                    <td class="text-end" id="configStopLoss">--</td>
+                                    <td class="p-3 text-gray-400">止损</td>
+                                    <td class="p-3 text-right" id="configStopLoss">--</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-secondary">止盈</td>
-                                    <td class="text-end" id="configTakeProfit">--</td>
+                                    <td class="p-3 text-gray-400">止盈</td>
+                                    <td class="p-3 text-right" id="configTakeProfit">--</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-secondary">最大仓位</td>
-                                    <td class="text-end" id="configMaxPosition">--</td>
+                                    <td class="p-3 text-gray-400">最大仓位</td>
+                                    <td class="p-3 text-right" id="configMaxPosition">--</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-secondary">单笔最大</td>
-                                    <td class="text-end" id="configMaxOrder">--</td>
+                                    <td class="p-3 text-gray-400">单笔最大</td>
+                                    <td class="p-3 text-right" id="configMaxOrder">--</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -469,102 +210,93 @@
         </div>
 
         <!-- 第二行：行情数据和风控信息 -->
-        <div class="row g-3 mb-3">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
             <!-- 行情数据表格 -->
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-graph-up-arrow"></i>实时行情</span>
-                        <button class="btn btn-sm btn-outline-primary" onclick="refreshTickers()">
-                            <i class="bi bi-arrow-clockwise me-1"></i>刷新
+            <div class="lg:col-span-8">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                        <span class="font-semibold flex items-center gap-2"><i class="bi bi-graph-up-arrow"></i>实时行情</span>
+                        <button class="text-primary hover:text-blue-400 text-sm px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="refreshTickers()">
+                            <i class="bi bi-arrow-clockwise"></i>刷新
                         </button>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>交易对</th>
-                                        <th class="text-end">最新价</th>
-                                        <th class="text-end">买一价</th>
-                                        <th class="text-end">卖一价</th>
-                                        <th class="text-end">24h 高</th>
-                                        <th class="text-end">24h 低</th>
-                                        <th class="text-end">24h 涨跌</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tickerTable">
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted py-4">
-                                            <div class="spinner-border spinner-border-sm" role="status"></div>
-                                            <span class="ms-2">正在加载行情数据...</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="p-0 overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-slate-900/50">
+                                <tr>
+                                    <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">交易对</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">最新价</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">买一价</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">卖一价</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">24h 高</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">24h 低</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">24h 涨跌</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tickerTable" class="divide-y divide-gray-700">
+                                <tr>
+                                    <td colspan="7" class="text-center text-gray-500 py-8">
+                                        <div class="w-5 h-5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin inline-block"></div>
+                                        <span class="ml-2">正在加载行情数据...</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
             <!-- 风控信息 -->
-            <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-shield-check"></i>风控信息
+            <div class="lg:col-span-4">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center gap-2">
+                        <i class="bi bi-shield-check"></i>
+                        <span class="font-semibold">风控信息</span>
                     </div>
-                    <div class="card-body">
+                    <div class="p-4">
                         <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-secondary">当前仓位</span>
-                                <span class="fw-bold" id="currentPosition">0.00 USDT</span>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400 text-sm">当前仓位</span>
+                                <span class="font-bold" id="currentPosition">0.00 USDT</span>
                             </div>
-                            <div class="progress">
-                                <div class="progress-bar" id="positionBar" role="progressbar" style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <div class="p-3 rounded text-center" style="background: rgba(63, 185, 80, 0.05);">
-                                    <div class="text-secondary small">今日盈亏</div>
-                                    <div class="stat-value text-profit" id="dailyPnl">+0.00</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 rounded text-center" style="background: rgba(88, 166, 255, 0.05);">
-                                    <div class="text-secondary small">今日交易</div>
-                                    <div class="stat-value" id="dailyTrades">0</div>
-                                </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                                <div class="bg-gradient-to-r from-primary to-success h-full rounded-full transition-all duration-300" id="positionBar" style="width: 0%"></div>
                             </div>
                         </div>
 
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <div class="p-3 rounded text-center" style="background: rgba(210, 153, 34, 0.05);">
-                                    <div class="text-secondary small">胜率</div>
-                                    <div class="stat-value" id="winRate">0%</div>
-                                </div>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="bg-success/5 rounded-lg p-3 text-center">
+                                <div class="text-gray-400 text-xs mb-1">今日盈亏</div>
+                                <div class="text-2xl font-bold text-success" id="dailyPnl">+0.00</div>
                             </div>
-                            <div class="col-6">
-                                <div class="p-3 rounded text-center" style="background: rgba(248, 81, 73, 0.05);">
-                                    <div class="text-secondary small">最大回撤</div>
-                                    <div class="stat-value text-loss" id="maxDrawdown">0%</div>
-                                </div>
+                            <div class="bg-primary/5 rounded-lg p-3 text-center">
+                                <div class="text-gray-400 text-xs mb-1">今日交易</div>
+                                <div class="text-2xl font-bold" id="dailyTrades">0</div>
                             </div>
                         </div>
 
-                        <div class="border-top border-secondary pt-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-secondary">止损线</span>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="bg-warning/5 rounded-lg p-3 text-center">
+                                <div class="text-gray-400 text-xs mb-1">胜率</div>
+                                <div class="text-2xl font-bold" id="winRate">0%</div>
+                            </div>
+                            <div class="bg-danger/5 rounded-lg p-3 text-center">
+                                <div class="text-gray-400 text-xs mb-1">最大回撤</div>
+                                <div class="text-2xl font-bold text-danger" id="maxDrawdown">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-700 pt-3 space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400 text-sm">止损线</span>
                                 <span class="text-danger" id="riskStopLoss">-5.00%</span>
                             </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-secondary">止盈线</span>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400 text-sm">止盈线</span>
                                 <span class="text-success" id="riskTakeProfit">+10.00%</span>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-secondary">日亏损限制</span>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400 text-sm">日亏损限制</span>
                                 <span class="text-warning" id="riskDailyLimit">-2.00%</span>
                             </div>
                         </div>
@@ -574,52 +306,50 @@
         </div>
 
         <!-- 第三行：订单创建和账户余额 -->
-        <div class="row g-3 mb-3">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
             <!-- 订单创建表单 -->
-            <div class="col-lg-5">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-cart-plus"></i>创建订单
+            <div class="lg:col-span-5">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center gap-2">
+                        <i class="bi bi-cart-plus"></i>
+                        <span class="font-semibold">创建订单</span>
                     </div>
-                    <div class="card-body">
-                        <ul class="nav nav-tabs mb-3" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#marketTab" type="button">
-                                    <i class="bi bi-lightning-fill me-1"></i>市价单
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#limitTab" type="button">
-                                    <i class="bi bi-currency-bitcoin me-1"></i>限价单
-                                </button>
-                            </li>
-                        </ul>
+                    <div class="p-4">
+                        <!-- 选项卡 -->
+                        <div class="flex border-b border-gray-700 mb-4">
+                            <button class="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary transition-colors" data-bs-toggle="tab" data-bs-target="#marketTab" type="button">
+                                <i class="bi bi-lightning-fill me-1"></i>市价单
+                            </button>
+                            <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 border-b-2 border-transparent hover:border-gray-600 transition-colors" data-bs-toggle="tab" data-bs-target="#limitTab" type="button">
+                                <i class="bi bi-currency-bitcoin me-1"></i>限价单
+                            </button>
+                        </div>
 
                         <div class="tab-content">
                             <!-- 市价单 -->
                             <div class="tab-pane fade show active" id="marketTab">
                                 <form id="marketOrderForm" onsubmit="return false;">
                                     <div class="mb-3">
-                                        <label class="form-label">交易所</label>
-                                        <select class="form-select" id="marketExchange">
+                                        <label class="block text-gray-400 text-sm mb-2">交易所</label>
+                                        <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100" id="marketExchange">
                                             <option value="binance">Binance (币安)</option>
                                             <option value="okx">OKX (欧易)</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">交易对</label>
-                                        <input type="text" class="form-control" id="marketSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
+                                        <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                                        <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="marketSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">数量</label>
-                                        <input type="number" class="form-control" id="marketAmount" placeholder="输入交易数量" step="0.001" min="0.001">
+                                        <label class="block text-gray-400 text-sm mb-2">数量</label>
+                                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="marketAmount" placeholder="输入交易数量" step="0.001" min="0.001">
                                     </div>
-                                    <div class="d-grid gap-2">
-                                        <button type="button" class="btn btn-success" onclick="createOrder('market', 'buy')">
-                                            <i class="bi bi-arrow-up me-1"></i>买入做多
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" class="bg-gradient-to-r from-success to-green-500 hover:from-green-500 hover:to-success text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('market', 'buy')">
+                                            <i class="bi bi-arrow-up"></i>买入做多
                                         </button>
-                                        <button type="button" class="btn btn-danger" onclick="createOrder('market', 'sell')">
-                                            <i class="bi bi-arrow-down me-1"></i>卖出做空
+                                        <button type="button" class="bg-gradient-to-r from-danger to-red-500 hover:from-red-500 hover:to-danger text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('market', 'sell')">
+                                            <i class="bi bi-arrow-down"></i>卖出做空
                                         </button>
                                     </div>
                                 </form>
@@ -629,30 +359,30 @@
                             <div class="tab-pane fade" id="limitTab">
                                 <form id="limitOrderForm" onsubmit="return false;">
                                     <div class="mb-3">
-                                        <label class="form-label">交易所</label>
-                                        <select class="form-select" id="limitExchange">
+                                        <label class="block text-gray-400 text-sm mb-2">交易所</label>
+                                        <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100" id="limitExchange">
                                             <option value="binance">Binance (币安)</option>
                                             <option value="okx">OKX (欧易)</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">交易对</label>
-                                        <input type="text" class="form-control" id="limitSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
+                                        <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                                        <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="limitSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">价格</label>
-                                        <input type="number" class="form-control" id="limitPrice" placeholder="输入委托价格" step="0.01" min="0.01">
+                                        <label class="block text-gray-400 text-sm mb-2">价格</label>
+                                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="limitPrice" placeholder="输入委托价格" step="0.01" min="0.01">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">数量</label>
-                                        <input type="number" class="form-control" id="limitAmount" placeholder="输入交易数量" step="0.001" min="0.001">
+                                        <label class="block text-gray-400 text-sm mb-2">数量</label>
+                                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="limitAmount" placeholder="输入交易数量" step="0.001" min="0.001">
                                     </div>
-                                    <div class="d-grid gap-2">
-                                        <button type="button" class="btn btn-success" onclick="createOrder('limit', 'buy')">
-                                            <i class="bi bi-arrow-up me-1"></i>买入做多
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" class="bg-gradient-to-r from-success to-green-500 hover:from-green-500 hover:to-success text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('limit', 'buy')">
+                                            <i class="bi bi-arrow-up"></i>买入做多
                                         </button>
-                                        <button type="button" class="btn btn-danger" onclick="createOrder('limit', 'sell')">
-                                            <i class="bi bi-arrow-down me-1"></i>卖出做空
+                                        <button type="button" class="bg-gradient-to-r from-danger to-red-500 hover:from-red-500 hover:to-danger text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('limit', 'sell')">
+                                            <i class="bi bi-arrow-down"></i>卖出做空
                                         </button>
                                     </div>
                                 </form>
@@ -663,28 +393,28 @@
             </div>
 
             <!-- 账户余额 -->
-            <div class="col-lg-3">
-                <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-wallet2"></i>账户余额</span>
-                        <button class="btn btn-sm btn-outline-primary" onclick="refreshBalance()">
+            <div class="lg:col-span-3">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                        <span class="font-semibold flex items-center gap-2"><i class="bi bi-wallet2"></i>账户余额</span>
+                        <button class="text-primary hover:text-blue-400 text-sm p-1.5 rounded border border-primary hover:bg-primary/10 transition-colors" onclick="refreshBalance()">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
+                    <div class="p-0">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-slate-900/50">
                                     <tr>
-                                        <th>交易所</th>
-                                        <th>币种</th>
-                                        <th class="text-end">可用</th>
+                                        <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">交易所</th>
+                                        <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">币种</th>
+                                        <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">可用</th>
                                     </tr>
                                 </thead>
-                                <tbody id="balanceTable">
+                                <tbody id="balanceTable" class="divide-y divide-gray-700">
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">
-                                            <span class="text-secondary">点击刷新按钮加载余额</span>
+                                        <td colspan="3" class="text-center text-gray-500 py-8">
+                                            <span class="text-gray-400">点击刷新按钮加载余额</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -695,29 +425,29 @@
             </div>
 
             <!-- 最近订单 -->
-            <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-list-ul"></i>最近订单</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="clearOrders()">
+            <div class="lg:col-span-4">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                        <span class="font-semibold flex items-center gap-2"><i class="bi bi-list-ul"></i>最近订单</span>
+                        <button class="text-gray-400 hover:text-gray-200 text-sm p-1.5 rounded border border-gray-600 hover:bg-gray-700 transition-colors" onclick="clearOrders()">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                            <table class="table table-sm">
-                                <thead>
+                    <div class="p-0">
+                        <div class="overflow-x-auto" style="max-height: 300px; overflow-y: auto;">
+                            <table class="w-full">
+                                <thead class="bg-slate-900/50 sticky top-0">
                                     <tr>
-                                        <th>时间</th>
-                                        <th>交易对</th>
-                                        <th>方向</th>
-                                        <th>数量</th>
-                                        <th>状态</th>
+                                        <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">时间</th>
+                                        <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">交易对</th>
+                                        <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">方向</th>
+                                        <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">数量</th>
+                                        <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">状态</th>
                                     </tr>
                                 </thead>
-                                <tbody id="orderTable">
+                                <tbody id="orderTable" class="divide-y divide-gray-700">
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted py-4">暂无订单</td>
+                                        <td colspan="5" class="text-center text-gray-500 py-8">暂无订单</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -728,21 +458,19 @@
         </div>
 
         <!-- 第四行：运行日志 -->
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-terminal"></i>运行日志</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="clearLog()">
-                            <i class="bi bi-trash me-1"></i>清空
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="log-container p-2" id="logContainer">
-                            <div class="log-entry">
-                                <span class="log-time">[--:--:--]</span>
-                                <span class="log-info">系统初始化完成，等待连接...</span>
-                            </div>
+        <div class="grid grid-cols-1">
+            <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                    <span class="font-semibold flex items-center gap-2"><i class="bi bi-terminal"></i>运行日志</span>
+                    <button class="text-gray-400 hover:text-gray-200 text-sm px-3 py-1.5 rounded border border-gray-600 hover:bg-gray-700 transition-colors flex items-center gap-1" onclick="clearLog()">
+                        <i class="bi bi-trash me-1"></i>清空
+                    </button>
+                </div>
+                <div class="p-0">
+                    <div class="bg-slate-900 border border-gray-700 rounded-lg p-2 font-mono text-sm max-h-72 overflow-y-auto" id="logContainer">
+                        <div class="px-3 py-1.5 border-b border-gray-700/50">
+                            <span class="text-gray-500 mr-2">[--:--:--]</span>
+                            <span class="text-primary">系统初始化完成，等待连接...</span>
                         </div>
                     </div>
                 </div>
@@ -750,8 +478,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
@@ -834,13 +560,13 @@
             const badge = document.getElementById('connectionStatus');
 
             if (connected) {
-                dot.className = 'pulse-dot active';
+                dot.className = 'pulse-dot w-2 h-2 rounded-full active';
                 text.textContent = '已连接';
-                badge.className = 'badge badge-connected me-3';
+                badge.className = 'px-3 py-1 rounded-full bg-blue-500/20 text-primary border border-primary inline-flex items-center gap-2 me-3';
             } else {
-                dot.className = 'pulse-dot inactive';
+                dot.className = 'pulse-dot w-2 h-2 rounded-full inactive';
                 text.textContent = '已断开';
-                badge.className = 'badge badge-disconnected me-3';
+                badge.className = 'px-3 py-1 rounded-full bg-yellow-500/20 text-warning border border-warning inline-flex items-center gap-2 me-3';
             }
         }
 
@@ -851,18 +577,22 @@
 
             if (state === 'running') {
                 stateEl.textContent = '运行中';
-                stateEl.className = 'stat-value text-profit';
+                stateEl.className = 'text-2xl font-bold text-success';
                 btnStart.disabled = true;
-                btnStart.classList.add('disabled');
+                btnStart.classList.add('opacity-50', 'cursor-not-allowed');
+                btnStart.classList.remove('hover:-translate-y-0.5');
                 btnStop.disabled = false;
-                btnStop.classList.remove('disabled');
+                btnStop.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnStop.classList.add('hover:-translate-y-0.5');
             } else {
                 stateEl.textContent = '已停止';
-                stateEl.className = 'stat-value text-loss';
+                stateEl.className = 'text-2xl font-bold text-danger';
                 btnStart.disabled = false;
-                btnStart.classList.remove('disabled');
+                btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnStart.classList.add('hover:-translate-y-0.5');
                 btnStop.disabled = true;
-                btnStop.classList.add('disabled');
+                btnStop.classList.add('opacity-50', 'cursor-not-allowed');
+                btnStop.classList.remove('hover:-translate-y-0.5');
             }
         }
 
@@ -890,7 +620,7 @@
                 const change = ticker.change || 0;
                 const sign = change >= 0 ? '+' : '';
                 changeCell.textContent = `${sign}${change.toFixed(2)}%`;
-                changeCell.className = `ticker-change ${change >= 0 ? 'text-up' : 'text-down'}`;
+                changeCell.className = `ticker-change ${change >= 0 ? 'text-success' : 'text-danger'}`;
             }
         }
 
@@ -900,29 +630,29 @@
 
             for (const [exchange, data] of Object.entries(balances)) {
                 if (data.error) {
-                    html += `<tr><td colspan="3" class="text-danger">${exchange}: ${data.error}</td></tr>`;
+                    html += `<tr><td colspan="3" class="text-danger p-3">${exchange}: ${data.error}</td></tr>`;
                     continue;
                 }
                 for (const [currency, info] of Object.entries(data)) {
                     if (info.free > 0 || info.total > 0) {
                         html += `
                             <tr>
-                                <td><span class="badge bg-secondary">${exchange}</span></td>
-                                <td>${currency}</td>
-                                <td class="text-end fw-bold">${formatNumber(info.free, 4)}</td>
+                                <td class="p-3"><span class="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">${exchange}</span></td>
+                                <td class="p-3">${currency}</td>
+                                <td class="p-3 text-right font-bold">${formatNumber(info.free, 4)}</td>
                             </tr>
                         `;
                     }
                 }
             }
 
-            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center text-muted py-3">暂无余额数据</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center text-gray-500 py-8">暂无余额数据</td></tr>';
         }
 
         function updateRiskDisplay(risk) {
             const pnl = risk.daily_pnl || 0;
             document.getElementById('dailyPnl').textContent = `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`;
-            document.getElementById('dailyPnl').className = `stat-value ${pnl >= 0 ? 'text-profit' : 'text-loss'}`;
+            document.getElementById('dailyPnl').className = `text-2xl font-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}`;
 
             document.getElementById('dailyTrades').textContent = risk.daily_trades || 0;
             document.getElementById('currentPosition').textContent = `${(risk.total_positions || 0).toFixed(2)} USDT`;
@@ -960,23 +690,23 @@
         function renderRecentOrders() {
             const tbody = document.getElementById('orderTable');
             if (recentOrders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">暂无订单</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-8">暂无订单</td></tr>';
                 return;
             }
 
             let html = '';
             for (const order of recentOrders) {
                 const statusClass = order.status === 'filled' ? 'text-success' :
-                                   order.status === 'cancelled' ? 'text-secondary' : 'text-warning';
+                                   order.status === 'cancelled' ? 'text-gray-500' : 'text-warning';
                 const statusText = order.status === 'filled' ? '已成交' :
                                   order.status === 'cancelled' ? '已取消' : '处理中';
                 html += `
-                    <tr>
-                        <td class="text-muted small">${order.time}</td>
-                        <td>${order.symbol}</td>
-                        <td class="${order.side === 'buy' ? 'text-success' : 'text-danger'}">${order.side === 'buy' ? '买入' : '卖出'}</td>
-                        <td>${formatNumber(order.amount, 4)}</td>
-                        <td class="${statusClass}">${statusText}</td>
+                    <tr class="hover:bg-gray-700/30 transition-colors">
+                        <td class="p-3 text-gray-400 text-sm">${order.time}</td>
+                        <td class="p-3">${order.symbol}</td>
+                        <td class="p-3 ${order.side === 'buy' ? 'text-success' : 'text-danger'}">${order.side === 'buy' ? '买入' : '卖出'}</td>
+                        <td class="p-3 text-right">${formatNumber(order.amount, 4)}</td>
+                        <td class="p-3 ${statusClass}">${statusText}</td>
                     </tr>
                 `;
             }
@@ -997,7 +727,7 @@
                 // 模式
                 const mode = data.risk?.enabled ? '实盘' : '测试';
                 document.getElementById('configMode').textContent = mode;
-                document.getElementById('configMode').className = `badge ${data.risk?.enabled ? 'bg-success' : 'bg-warning text-dark'}`;
+                document.getElementById('configMode').className = `px-2 py-1 rounded text-xs font-medium ${data.risk?.enabled ? 'bg-success text-white' : 'bg-warning text-slate-900'}`;
 
                 // 风控参数
                 document.getElementById('configStopLoss').textContent = `-${((data.risk?.stop_loss_percent || 0.05) * 100).toFixed(1)}%`;
@@ -1026,9 +756,9 @@
                     for (const [name, info] of Object.entries(data.exchanges)) {
                         const connected = info.connected || info.status === 'connected';
                         html += `
-                            <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
-                                <span class="text-capitalize">${name}</span>
-                                <span class="badge ${connected ? 'badge-connected' : 'badge-disconnected'}">
+                            <div class="p-3 bg-transparent flex items-center justify-between">
+                                <span class="capitalize text-gray-300">${name}</span>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-blue-500/20 text-primary border border-primary' : 'bg-yellow-500/20 text-warning border border-warning'}">
                                     ${connected ? '<i class="bi bi-check-circle-fill me-1"></i>已连接' : '<i class="bi bi-x-circle-fill me-1"></i>断开'}
                                 </span>
                             </div>
@@ -1037,14 +767,14 @@
                     tbody.innerHTML = html;
                 } else {
                     tbody.innerHTML = `
-                        <div class="list-group-item bg-transparent text-center text-muted">
+                        <div class="p-3 bg-transparent text-center text-gray-500">
                             暂无交易所连接信息
                         </div>
                     `;
                 }
             } catch (error) {
                 document.getElementById('exchangeList').innerHTML = `
-                    <div class="list-group-item bg-transparent text-center text-danger">
+                    <div class="p-3 bg-transparent text-center text-danger">
                         <i class="bi bi-exclamation-triangle me-1"></i>加载失败
                     </div>
                 `;
@@ -1053,7 +783,7 @@
 
         async function refreshTickers() {
             const tbody = document.getElementById('tickerTable');
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2 text-muted">加载中...</span></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="w-5 h-5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin inline-block"></div><span class="ms-2 text-gray-400">加载中...</span></td></tr>';
 
             let html = '';
             for (const ticker of defaultTickers) {
@@ -1063,36 +793,36 @@
 
                     if (data.error) {
                         html += `
-                            <tr id="ticker-${ticker.symbol}">
-                                <td>${ticker.name}</td>
+                            <tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
+                                <td class="p-3 font-bold">${ticker.name}</td>
                                 <td colspan="6" class="text-danger text-center">数据获取失败</td>
                             </tr>
                         `;
                     } else {
-                        const changeClass = (data.change || 0) >= 0 ? 'text-up' : 'text-down';
+                        const changeClass = (data.change || 0) >= 0 ? 'text-success' : 'text-danger';
                         const changeSign = (data.change || 0) >= 0 ? '+' : '';
                         html += `
-                            <tr id="ticker-${ticker.symbol}">
-                                <td class="fw-bold">${ticker.name}</td>
-                                <td class="text-end ticker-price" data-price="${data.last}">${formatPrice(data.last)}</td>
-                                <td class="text-end">${formatPrice(data.bid || 0)}</td>
-                                <td class="text-end">${formatPrice(data.ask || 0)}</td>
-                                <td class="text-end text-muted">${formatPrice(data.high || 0)}</td>
-                                <td class="text-end text-muted">${formatPrice(data.low || 0)}</td>
-                                <td class="text-end ${changeClass}">${changeSign}${(data.change || 0).toFixed(2)}%</td>
+                            <tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
+                                <td class="p-3 font-bold">${ticker.name}</td>
+                                <td class="text-right ticker-price" data-price="${data.last}">${formatPrice(data.last)}</td>
+                                <td class="text-right">${formatPrice(data.bid || 0)}</td>
+                                <td class="text-right">${formatPrice(data.ask || 0)}</td>
+                                <td class="text-right text-gray-400">${formatPrice(data.high || 0)}</td>
+                                <td class="text-right text-gray-400">${formatPrice(data.low || 0)}</td>
+                                <td class="text-right ${changeClass}">${changeSign}${(data.change || 0).toFixed(2)}%</td>
                             </tr>
                         `;
                     }
                 } catch (error) {
                     html += `
-                        <tr id="ticker-${ticker.symbol}">
-                            <td>${ticker.name}</td>
+                        <tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
+                            <td class="p-3">${ticker.name}</td>
                             <td colspan="6" class="text-danger text-center">请求失败</td>
                         </tr>
                     `;
                 }
             }
-            tbody.innerHTML = html || '<tr><td colspan="7" class="text-center text-muted py-4">暂无行情数据</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="7" class="text-center text-gray-500 py-8">暂无行情数据</td></tr>';
         }
 
         async function refreshBalance() {
@@ -1124,7 +854,7 @@
                 const data = await response.json();
 
                 document.getElementById('engineState').textContent = data.state === 'running' ? '运行中' : '已停止';
-                document.getElementById('engineState').className = `stat-value ${data.state === 'running' ? 'text-profit' : 'text-loss'}`;
+                document.getElementById('engineState').className = `text-2xl font-bold ${data.state === 'running' ? 'text-success' : 'text-danger'}`;
                 document.getElementById('uptime').textContent = data.uptime || '--:--:--';
                 document.getElementById('totalTrades').textContent = data.stats?.total_trades || 0;
                 document.getElementById('errorCount').textContent = data.stats?.errors || 0;
@@ -1206,9 +936,16 @@
             const container = document.getElementById('logContainer');
             const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
 
+            const levelColors = {
+                'info': 'text-primary',
+                'success': 'text-success',
+                'warning': 'text-warning',
+                'error': 'text-danger'
+            };
+
             const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-${level}">${message}</span>`;
+            entry.className = 'px-3 py-1.5 border-b border-gray-700/50';
+            entry.innerHTML = `<span class="text-gray-500 mr-2">[${time}]</span><span class="${levelColors[level] || 'text-gray-300'}">${message}</span>`;
 
             container.appendChild(entry);
             container.scrollTop = container.scrollHeight;
@@ -1221,7 +958,7 @@
 
         function clearLog() {
             const container = document.getElementById('logContainer');
-            container.innerHTML = '<div class="log-entry"><span class="log-time">[' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + ']</span><span class="log-info">日志已清空</span></div>';
+            container.innerHTML = '<div class="px-3 py-1.5 border-b border-gray-700/50"><span class="text-gray-500 mr-2">[' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + ']</span><span class="text-primary">日志已清空</span></div>';
         }
 
         // ============ 工具函数 ============
