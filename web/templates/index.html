@@ -551,6 +551,20 @@
             socket.on('error', (data) => {
                 addLog('error', data.message || '发生错误');
             });
+
+            socket.on('exchange_disconnected', (data) => {
+                addLog('warning', `${data.exchange} 已断开连接`);
+                refreshExchanges();
+            });
+
+            socket.on('exchange_connected', (data) => {
+                addLog('success', `${data.exchange} 已连接`);
+                refreshExchanges();
+            });
+
+            socket.on('exchanges_update', (data) => {
+                refreshExchanges();
+            });
         }
 
         // ============ UI 更新函数 ============
@@ -633,20 +647,34 @@
                     html += `<tr><td colspan="3" class="text-danger p-3">${exchange}: ${data.error}</td></tr>`;
                     continue;
                 }
+                // 处理两种格式：
+                // 1. { "USDT": 10000.0 } - 直接是数字
+                // 2. { "USDT": { "free": 10000.0, "total": 10000.0 } } - 对象格式
                 for (const [currency, info] of Object.entries(data)) {
-                    if (info.free > 0 || info.total > 0) {
+                    let free, total;
+                    if (typeof info === 'number') {
+                        free = info;
+                        total = info;
+                    } else if (typeof info === 'object') {
+                        free = info.free || 0;
+                        total = info.total || 0;
+                    } else {
+                        continue;
+                    }
+                    
+                    if (free > 0 || total > 0) {
                         html += `
                             <tr>
                                 <td class="p-3"><span class="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">${exchange}</span></td>
                                 <td class="p-3">${currency}</td>
-                                <td class="p-3 text-right font-bold">${formatNumber(info.free, 4)}</td>
+                                <td class="p-3 text-right font-bold">${formatNumber(free, 4)}</td>
                             </tr>
                         `;
                     }
                 }
             }
 
-            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center text-gray-500 py-8">暂无余额数据</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center text-gray-500 py-8">点击刷新按钮加载余额</td></tr>';
         }
 
         function updateRiskDisplay(risk) {
@@ -765,9 +793,12 @@
                         html += `
                             <div class="p-3 bg-transparent flex items-center justify-between">
                                 <span class="text-gray-300">${displayName}</span>
-                                <span class="px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-blue-500/20 text-primary border border-primary' : 'bg-yellow-500/20 text-warning border border-warning'}">
-                                    ${connected ? '<i class="bi bi-check-circle-fill me-1"></i>已连接' : '<i class="bi bi-x-circle-fill me-1"></i>断开'}
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-blue-500/20 text-primary border border-primary' : 'bg-yellow-500/20 text-warning border border-warning'}">
+                                        ${connected ? '<i class="bi bi-check-circle-fill me-1"></i>已连接' : '<i class="bi bi-x-circle-fill me-1"></i>断开'}
+                                    </span>
+                                    ${connected ? `<button class="px-2 py-1 text-xs rounded border border-danger text-danger hover:bg-danger hover:text-white transition-colors" onclick="disconnectExchange('${name}')">断开</button>` : `<button class="px-2 py-1 text-xs rounded border border-success text-success hover:bg-success hover:text-white transition-colors" onclick="connectExchange('${name}')">连接</button>`}
+                                </div>
                             </div>
                         `;
                     }
@@ -863,17 +894,8 @@
                 document.getElementById('engineState').textContent = data.state === 'running' ? '运行中' : '已停止';
                 document.getElementById('engineState').className = `text-2xl font-bold ${data.state === 'running' ? 'text-success' : 'text-danger'}`;
                 
-                // 运行时间只显示时:分，降低跳动频率感
-                if (data.uptime) {
-                    const parts = data.uptime.split(':');
-                    if (parts.length >= 2) {
-                        document.getElementById('uptime').textContent = parts[0] + ':' + parts[1];
-                    } else {
-                        document.getElementById('uptime').textContent = data.uptime;
-                    }
-                } else {
-                    document.getElementById('uptime').textContent = '--:--';
-                }
+                // 显示完整运行时间（时:分:秒）
+                document.getElementById('uptime').textContent = data.uptime || '--:--:--';
                 
                 document.getElementById('totalTrades').textContent = data.stats?.total_trades || 0;
                 document.getElementById('errorCount').textContent = data.stats?.errors || 0;
@@ -893,6 +915,16 @@
         function stopEngine() {
             socket.emit('stop_engine');
             addLog('warning', '正在停止交易引擎...');
+        }
+
+        function disconnectExchange(exchangeName) {
+            socket.emit('disconnect_exchange', { exchange: exchangeName });
+            addLog('warning', `正在断开 ${exchangeName} 连接...`);
+        }
+
+        function connectExchange(exchangeName) {
+            socket.emit('connect_exchange', { exchange: exchangeName });
+            addLog('info', `正在连接 ${exchangeName}...`);
         }
 
         function createOrder(type, side) {

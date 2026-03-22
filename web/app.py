@@ -270,7 +270,6 @@ def handle_start_engine():
     async def _start():
         try:
             await engine.start()
-            # 启动成功后推送状态
             socketio.emit("engine_status", {"state": engine.state.value})
             logger.info(f"引擎已启动，状态: {engine.state.value}")
         except Exception as e:
@@ -290,7 +289,6 @@ def handle_stop_engine():
     async def _stop():
         try:
             await engine.stop()
-            # 停止成功后推送状态
             socketio.emit("engine_status", {"state": engine.state.value})
             logger.info(f"引擎已停止，状态: {engine.state.value}")
         except Exception as e:
@@ -298,6 +296,64 @@ def handle_stop_engine():
             socketio.emit("error", {"message": f"引擎停止失败: {str(e)}"})
     
     run_async(_stop())
+
+
+@socketio.on("disconnect_exchange")
+def handle_disconnect_exchange(data):
+    """断开交易所连接"""
+    if engine is None:
+        emit("error", {"message": "引擎未初始化"})
+        return
+    
+    exchange_name = data.get("exchange")
+    if exchange_name not in engine.exchanges:
+        emit("error", {"message": f"交易所 {exchange_name} 未注册"})
+        return
+    
+    async def _disconnect():
+        try:
+            await engine.exchanges[exchange_name].disconnect()
+            socketio.emit("exchange_disconnected", {"exchange": exchange_name})
+            logger.info(f"{exchange_name} 已断开连接")
+            # 刷新交易所列表
+            await _refresh_exchanges_async()
+        except Exception as e:
+            logger.error(f"断开 {exchange_name} 失败: {e}")
+            socketio.emit("error", {"message": f"断开连接失败: {str(e)}"})
+    
+    run_async(_disconnect())
+
+
+@socketio.on("connect_exchange")
+def handle_connect_exchange(data):
+    """连接交易所"""
+    if engine is None:
+        emit("error", {"message": "引擎未初始化"})
+        return
+    
+    exchange_name = data.get("exchange")
+    if exchange_name not in engine.exchanges:
+        emit("error", {"message": f"交易所 {exchange_name} 未注册"})
+        return
+    
+    async def _connect():
+        try:
+            await engine.exchanges[exchange_name].connect()
+            socketio.emit("exchange_connected", {"exchange": exchange_name})
+            logger.info(f"{exchange_name} 已连接")
+            # 刷新交易所列表
+            await _refresh_exchanges_async()
+        except Exception as e:
+            logger.error(f"连接 {exchange_name} 失败: {e}")
+            socketio.emit("error", {"message": f"连接失败: {str(e)}"})
+    
+    run_async(_connect())
+
+
+async def _refresh_exchanges_async():
+    """刷新交易所状态并推送"""
+    status = engine.get_status()
+    socketio.emit("exchanges_update", {"exchanges": status.get("exchanges", [])})
 
 
 # ============ 启动 ============
