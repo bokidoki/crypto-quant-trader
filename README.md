@@ -98,7 +98,7 @@ python web\app.py
 - [ ] Phase 2: 交易所接口
 - [ ] Phase 3: 策略框架
 - [ ] Phase 4: 风控模块
-- [ ] Phase 5: OpenClaw 集成
+- [x] Phase 5: OpenClaw 集成
 - [ ] Phase 6: Web 界面
 
 ## License

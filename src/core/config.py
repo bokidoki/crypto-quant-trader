@@ -60,6 +60,25 @@ class LoggingConfig(BaseModel):
     rotation: str = "10 MB"
 
 
+class OpenClawNotificationConfig(BaseModel):
+    """OpenClaw 通知配置"""
+    enabled: bool = True
+    receive_id: str = ""
+
+
+class OpenClawSchedulerConfig(BaseModel):
+    """OpenClaw 调度器配置"""
+    enabled: bool = True
+    heartbeat_interval: int = 60
+    status_interval: int = 300
+
+
+class OpenClawConfig(BaseModel):
+    """OpenClaw 集成配置"""
+    notification: OpenClawNotificationConfig = Field(default_factory=OpenClawNotificationConfig)
+    scheduler: OpenClawSchedulerConfig = Field(default_factory=OpenClawSchedulerConfig)
+
+
 class Settings(BaseModel):
     """全局配置"""
     mode: str = "testnet"
@@ -69,6 +88,7 @@ class Settings(BaseModel):
     risk: RiskConfig = Field(default_factory=RiskConfig)
     notification: NotificationConfig = Field(default_factory=NotificationConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    openclaw: OpenClawConfig = Field(default_factory=OpenClawConfig)
 
 
 def load_settings(config_path: Optional[str] = None) -> Settings:

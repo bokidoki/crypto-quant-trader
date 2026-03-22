@@ -46,6 +46,21 @@ notification:
   # 或使用 OpenClaw 脚本
   script: "D:\\workflow\\scripts\\feishu-send.js"
 
+# OpenClaw 集成配置
+openclaw:
+  # 通知开关
+  notification:
+    enabled: true
+    # 指定接收者 (可选，为空使用脚本默认)
+    receive_id: ""
+  # 定时任务配置
+  scheduler:
+    enabled: true
+    # 心跳检测间隔（秒）
+    heartbeat_interval: 60
+    # 状态上报间隔（秒）
+    status_interval: 300
+
 # 日志配置
 logging:
   level: INFO
