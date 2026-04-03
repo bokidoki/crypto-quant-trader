@@ -5,6 +5,7 @@ import asyncio
 import sys
 import threading
 import traceback
+import time
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict
@@ -1084,6 +1085,30 @@ _ticker_push_task = None
 # 活跃 K 线订阅记录：key = "exchange:symbol:interval"
 _active_kline_subscriptions: Dict[str, Dict] = {}
 
+# 后台事件循环管理
+_background_loop = None
+_background_thread = None
+
+
+def _run_background_loop():
+    """在后台线程中运行事件循环"""
+    global _background_loop
+    _background_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(_background_loop)
+    _background_loop.run_forever()
+
+
+def _ensure_background_loop():
+    """确保后台事件循环正在运行"""
+    global _background_loop, _background_thread
+    if _background_loop is None or not _background_loop.is_running():
+        _background_thread = threading.Thread(target=_run_background_loop, daemon=True)
+        _background_thread.start()
+        # 等待循环启动
+        while _background_loop is None or not _background_loop.is_running():
+            time.sleep(0.01)
+    return _background_loop
+
 
 async def _periodic_state_push():
     """定期推送引擎状态到 WebSocket 客户端"""
@@ -1176,20 +1201,26 @@ async def _unsubscribe_kline(sub_key: str):
     del _active_kline_subscriptions[sub_key]
 
 
+def start_background_tasks():
+    """在 SocketIO 启动后运行后台任务"""
+    global _background_loop
+
+    # 获取或创建后台事件循环
+    loop = _ensure_background_loop()
+
+    # 在后台事件循环中运行协程
+    asyncio.run_coroutine_threadsafe(_periodic_state_push(), loop)
+    asyncio.run_coroutine_threadsafe(_periodic_risk_push(), loop)
+    asyncio.run_coroutine_threadsafe(_periodic_ticker_push(), loop)
+
+    logger.info("后台推送任务已启动（异步模式）")
+
+
 @socketio.on("connect")
 def handle_connect(*args):
     """客户端连接"""
     logger.info(f"客户端连接：{request.sid}")
     emit("connected", {"message": "连接成功"})
-
-    # 启动定期推送任务
-    global _state_push_task, _risk_push_task, _ticker_push_task
-    if _state_push_task is None or _state_push_task.done():
-        _state_push_task = asyncio.create_task(_periodic_state_push())
-    if _risk_push_task is None or _risk_push_task.done():
-        _risk_push_task = asyncio.create_task(_periodic_risk_push())
-    if _ticker_push_task is None or _ticker_push_task.done():
-        _ticker_push_task = asyncio.create_task(_periodic_ticker_push())
 
 
 @socketio.on("subscribe_klines")
@@ -1225,7 +1256,9 @@ def handle_subscribe_klines(data):
 
     # 如果已订阅，先取消
     if sub_key in _active_kline_subscriptions:
-        asyncio.create_task(_unsubscribe_kline(sub_key))
+        # 在后台事件循环中运行
+        bg_loop = _ensure_background_loop()
+        asyncio.run_coroutine_threadsafe(_unsubscribe_kline(sub_key), bg_loop)
 
     # 创建回调函数
     async def kline_callback(kline):
@@ -1247,10 +1280,11 @@ def handle_subscribe_klines(data):
 
     # 订阅交易所 K 线
     try:
-        loop = asyncio.get_event_loop()
+        # 使用后台事件循环
+        bg_loop = _ensure_background_loop()
         future = asyncio.run_coroutine_threadsafe(
             exch.subscribe_klines(symbol, interval, kline_callback),
-            loop
+            bg_loop
         )
         future.result(timeout=5)
 
@@ -1284,7 +1318,10 @@ def handle_unsubscribe_klines(data):
         return
 
     sub_key = f"{exchange_name}:{symbol}:{interval}"
-    asyncio.create_task(_unsubscribe_kline(sub_key))
+
+    # 在后台事件循环中运行
+    bg_loop = _ensure_background_loop()
+    asyncio.run_coroutine_threadsafe(_unsubscribe_kline(sub_key), bg_loop)
 
 
 #
@@ -1696,6 +1733,8 @@ def run_server(host: str = "0.0.0.0", port: int = None):
     # 使用 threaded=True 启用多线程处理
     if socketio:
         # SocketIO 自带 threaded 模式，启用 debug
+        # 启动后台推送任务
+        start_background_tasks()
         socketio.run(app, host=host, port=port, debug=True, allow_unsafe_werkzeug=True, log_output=True)
     else:
         # 使用 threaded mode with debug
