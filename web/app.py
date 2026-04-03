@@ -1272,6 +1272,21 @@ def handle_subscribe_klines(data):
         emit("error", {"message": f"订阅失败：{str(e)}"})
 
 
+@socketio.on("unsubscribe_klines")
+def handle_unsubscribe_klines(data):
+    """处理 K 线取消订阅请求"""
+    exchange_name = data.get("exchange", "binance")
+    symbol = data.get("symbol")
+    interval = data.get("interval")
+
+    if not symbol or not interval:
+        emit("error", {"message": "参数错误"})
+        return
+
+    sub_key = f"{exchange_name}:{symbol}:{interval}"
+    asyncio.create_task(_unsubscribe_kline(sub_key))
+
+
 #
 @socketio.on("disconnect")
 def handle_disconnect():
