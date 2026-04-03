@@ -2314,6 +2314,9 @@
 
                     klineSeries.setData(klineData);
 
+                    // 加载历史数据后，发起实时订阅
+                    subscribeKlines(symbol, interval);
+
                     // 更新标题
                     const now = new Date();
                     const lastKline = klineData[klineData.length - 1];
