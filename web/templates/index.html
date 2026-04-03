@@ -953,6 +953,16 @@
                 refreshExchanges();
             });
 
+            socket.on('kline_subscribed', (data) => {
+                console.log('[DEBUG] K 线已订阅:', data);
+                addLog('info', `K 线已订阅：${data.symbol} ${data.interval}`);
+            });
+
+            socket.on('kline_update', (data) => {
+                console.log('[DEBUG] 收到 K 线更新:', data);
+                updateKlineChart(data);
+            });
+
             // Socket.IO 内部日志
             socket.onAny((event, ...args) => {
                 console.log('[SOCKET] 事件:', event, '数据:', args);
