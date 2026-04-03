@@ -1192,6 +1192,86 @@ def handle_connect(*args):
         _ticker_push_task = asyncio.create_task(_periodic_ticker_push())
 
 
+@socketio.on("subscribe_klines")
+def handle_subscribe_klines(data):
+    """处理 K 线订阅请求"""
+    from loguru import logger
+
+    exchange_name = data.get("exchange", "binance")
+    symbol = data.get("symbol")
+    interval = data.get("interval")
+
+    if not symbol or not interval:
+        emit("error", {"message": "参数错误：需要 symbol 和 interval"})
+        return
+
+    # 检查引擎
+    if engine is None:
+        emit("error", {"message": "引擎未初始化"})
+        return
+
+    # 检查交易所
+    if exchange_name not in engine.exchanges:
+        emit("error", {"message": f"交易所 {exchange_name} 不可用"})
+        return
+
+    exch = engine.exchanges[exchange_name]
+    if not getattr(exch, 'connected', False):
+        emit("error", {"message": f"交易所 {exchange_name} 未连接"})
+        return
+
+    # 生成订阅 key
+    sub_key = f"{exchange_name}:{symbol}:{interval}"
+
+    # 如果已订阅，先取消
+    if sub_key in _active_kline_subscriptions:
+        asyncio.create_task(_unsubscribe_kline(sub_key))
+
+    # 创建回调函数
+    async def kline_callback(kline):
+        try:
+            socketio.emit("kline_update", {
+                "exchange": exchange_name,
+                "symbol": symbol,
+                "interval": interval,
+                "time": int(kline.timestamp.timestamp() * 1000),
+                "open": kline.open,
+                "high": kline.high,
+                "low": kline.low,
+                "close": kline.close,
+                "volume": kline.volume,
+                "is_closed": kline.is_closed,
+            })
+        except Exception as e:
+            logger.error(f"推送 K 线失败：{e}")
+
+    # 订阅交易所 K 线
+    try:
+        loop = asyncio.get_event_loop()
+        future = asyncio.run_coroutine_threadsafe(
+            exch.subscribe_klines(symbol, interval, kline_callback),
+            loop
+        )
+        future.result(timeout=5)
+
+        _active_kline_subscriptions[sub_key] = {
+            "exchange": exchange_name,
+            "symbol": symbol,
+            "interval": interval,
+            "callback": kline_callback,
+        }
+
+        logger.info(f"K 线订阅成功：{sub_key}")
+        emit("kline_subscribed", {
+            "exchange": exchange_name,
+            "symbol": symbol,
+            "interval": interval,
+        })
+    except Exception as e:
+        logger.error(f"K 线订阅失败：{e}")
+        emit("error", {"message": f"订阅失败：{str(e)}"})
+
+
 #
 @socketio.on("disconnect")
 def handle_disconnect():
