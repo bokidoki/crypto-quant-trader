@@ -3,6 +3,7 @@ Binance 交易所接口
 """
 import asyncio
 import json
+import traceback
 from typing import Dict, List, Optional, Any, Callable, Set
 from datetime import datetime
 from enum import Enum
@@ -71,32 +72,60 @@ class BinanceExchange(BaseExchange):
             logger.info("Binance 未启用")
             return
 
-        self.client = ccxt.binance(
-            {
-                "apiKey": config.api_key,
-                "secret": config.api_secret,
-                "enableRateLimit": True,
-                "options": {
-                    "defaultType": "spot",
-                },
-            }
-        )
-
         # 测试网设置
         if config.testnet:
-            self.client.set_sandbox_mode(True)
+            self.client = ccxt.binance(
+                {
+                    "apiKey": config.api_key,
+                    "secret": config.api_secret,
+                    "enableRateLimit": True,
+                    "options": {
+                        "defaultType": "spot",
+                    },
+                    "urls": {
+                        "api": {
+                            "public": "https://testnet.binance.vision/api",
+                            "private": "https://testnet.binance.vision/api",
+                            "fapiPublic": "https://testnet.binancefuture.com/fapi",
+                            "fapiPrivate": "https://testnet.binancefuture.com/fapi",
+                        }
+                    },
+                }
+            )
             logger.info("Binance 测试网模式")
+        else:
+            self.client = ccxt.binance(
+                {
+                    "apiKey": config.api_key,
+                    "secret": config.api_secret,
+                    "enableRateLimit": True,
+                    "options": {
+                        "defaultType": "spot",
+                    },
+                }
+            )
 
         # 代理设置 (ccxt 异步版本使用 aiohttp_proxy)
         if self.settings.proxy.enabled:
             self.client.aiohttp_proxy = self.settings.proxy.http
             logger.info(f"Binance 使用代理：{self.settings.proxy.http}")
 
-        # 加载市场
-        await self.client.load_markets()
+        # 加载市场（不抛异常）
+        try:
+            await self.client.load_markets()
+            logger.info(f"Binance 已连接，市场数：{len(self.client.markets)}")
+        except Exception as e:
+            logger.warning(f"Binance 加载市场失败：{e}，继续初始化...")
+            # 手动标记一些常用交易对，以便基本功能可用
+            self.client.markets = {
+                "BTC/USDT": {"symbol": "BTC/USDT", "active": True},
+                "ETH/USDT": {"symbol": "ETH/USDT", "active": True},
+                "BNB/USDT": {"symbol": "BNB/USDT", "active": True},
+                "TEST/USDT": {"symbol": "TEST/USDT", "active": True},  # 测试用
+            }
+            logger.info("Binance 使用手动市场列表")
 
         self.connected = True
-        logger.info(f"Binance 已连接，市场数：{len(self.client.markets)}")
 
     # ==================== WebSocket 管理核心方法 ====================
 
@@ -126,11 +155,38 @@ class BinanceExchange(BaseExchange):
     async def _connect_ws(self):
         """建立 WebSocket 连接"""
         try:
+            # 构建连接参数
+            ws_kwargs = {
+                "ping_interval": self.HEARTBEAT_INTERVAL,
+                "ping_timeout": 10,
+                "close_timeout": 5,
+            }
+
+            # 如果启用了代理，尝试使用代理连接
+            if self.settings.proxy.enabled:
+                try:
+                    # 尝试导入代理支持
+                    import socks
+                    import socket
+
+                    # 解析代理地址
+                    proxy_url = self.settings.proxy.http
+                    if proxy_url.startswith("http://"):
+                        proxy_url = proxy_url[7:]
+                    proxy_host, proxy_port = proxy_url.split(":")
+
+                    # 设置 SOCKS5 代理
+                    socks.set_default_proxy(socks.SOCKS5, proxy_host, int(proxy_port))
+                    socket.socket = socks.socksocket
+                    logger.info(f"Binance WebSocket 使用 SOCKS5 代理：{proxy_host}:{proxy_port}")
+                except ImportError:
+                    logger.warning("PySocks 未安装，无法使用代理。请安装：pip install PySocks")
+                except Exception as e:
+                    logger.warning(f"设置代理失败：{e}，尝试直连...")
+
             self._ws = await websockets.connect(
                 self.WS_URL,
-                ping_interval=self.HEARTBEAT_INTERVAL,
-                ping_timeout=10,
-                close_timeout=5,
+                **ws_kwargs
             )
             self._ws_connected = True
             self._last_pong_time = datetime.now().timestamp()
@@ -385,18 +441,25 @@ class BinanceExchange(BaseExchange):
         if not self.connected:
             raise RuntimeError("Binance 未连接")
 
-        ticker = await self.client.fetch_ticker(symbol)
+        logger.info(f"Binance 获取行情：{symbol}")
+        try:
+            ticker = await self.client.fetch_ticker(symbol)
+            logger.info(f"Binance 行情获取成功：{ticker.get('last')}")
 
-        return Ticker(
-            symbol=symbol,
-            last=ticker["last"],
-            bid=ticker["bid"],
-            ask=ticker["ask"],
-            high=ticker["high"],
-            low=ticker["low"],
-            volume=ticker["baseVolume"],
-            timestamp=datetime.fromtimestamp(ticker["timestamp"] / 1000),
-        )
+            return Ticker(
+                symbol=symbol,
+                last=ticker.get("last", 0),
+                bid=ticker.get("bid", 0),
+                ask=ticker.get("ask", 0),
+                high=ticker.get("high", 0),
+                low=ticker.get("low", 0),
+                volume=ticker.get("baseVolume", 0),
+                quote_volume=ticker.get("quoteVolume", 0),
+                timestamp=datetime.fromtimestamp(ticker.get("timestamp", 0) / 1000) if ticker.get("timestamp") else datetime.now(),
+            )
+        except Exception as e:
+            logger.error(f"Binance 获取行情失败：{e}")
+            raise
 
     async def get_klines(
         self, symbol: str, interval: str = "1h", limit: int = 100
@@ -477,20 +540,27 @@ class BinanceExchange(BaseExchange):
                 raise ValueError(f"{order_type.value} 需要提供触发价格")
             params["stopPrice"] = price
 
-        # 创建订单
-        order = await self.client.create_order(
-            symbol=symbol,
-            type=type_map.get(order_type, "market"),
-            side=side.value,
-            amount=amount,
-            price=price if order_type in [OrderType.LIMIT, OrderType.STOP_LOSS_LIMIT,
-                                           OrderType.TAKE_PROFIT_LIMIT] else None,
-            params=params if params else None,
-        )
+        try:
+            # 创建订单
+            logger.info(f"开始创建订单：{symbol} {side.value} {amount} {type_map.get(order_type, 'market')}")
+            raw_order = await self.client.create_order(
+                symbol=symbol,
+                type=type_map.get(order_type, "market"),
+                side=side.value,
+                amount=amount,
+                price=price if order_type in [OrderType.LIMIT, OrderType.STOP_LOSS_LIMIT,
+                                               OrderType.TAKE_PROFIT_LIMIT] else None,
+                params=params,  # 总是传递 params，即使是空 dict
+            )
+            logger.info(f"订单原始响应：{raw_order}")
 
-        logger.info(f"订单已创建：{order['id']} {side.value} {amount} {symbol}")
+            logger.info(f"订单已创建：{raw_order.get('id', 'unknown')} {side.value} {amount} {symbol}")
 
-        return self._parse_order(order)
+            return self._parse_order(raw_order)
+        except Exception as e:
+            logger.error(f"订单创建失败：{e}")
+            logger.error(f"详细错误：{traceback.format_exc()}")
+            raise
 
     async def cancel_order(self, order_id: str, symbol: str) -> bool:
         """取消订单"""
@@ -520,6 +590,25 @@ class BinanceExchange(BaseExchange):
 
         orders = await self.client.fetch_open_orders(symbol)
         return [self._parse_order(o) for o in orders]
+
+    async def get_orders(self, symbol: Optional[str] = None, limit: int = 50) -> List[Order]:
+        """获取历史订单（包括已完成和已取消）"""
+        if not self.connected:
+            raise RuntimeError("Binance 未连接")
+
+        try:
+            # 使用 fetch_orders 获取历史订单
+            orders = await self.client.fetch_orders(symbol, limit=limit)
+            return [self._parse_order(o) for o in orders]
+        except Exception as e:
+            logger.error(f"获取历史订单失败：{e}")
+            # 如果 fetch_orders 不可用，尝试使用 fetch_open_orders + fetch_closed_orders
+            try:
+                closed_orders = await self.client.fetch_closed_orders(symbol, limit=limit)
+                return [self._parse_order(o) for o in closed_orders]
+            except Exception as e2:
+                logger.error(f"获取已结束订单失败：{e2}")
+                return []
 
     async def subscribe_ticker(self, symbol: str, callback: Callable):
         """
@@ -559,10 +648,38 @@ class BinanceExchange(BaseExchange):
             self._kline_callbacks[symbol_key][interval] = []
         self._kline_callbacks[symbol_key][interval].append(callback)
 
-        # 生成流名称并订阅
-        stream_name = self._generate_stream_name(symbol_upper, WsStreamType.KLINE, interval)
-        await self._subscribe_stream(stream_name)
-        logger.info(f"Binance K 线订阅：{symbol} {interval}")
+        # 尝试 WebSocket 订阅，失败时降级到 HTTP 轮询
+        try:
+            stream_name = self._generate_stream_name(symbol_upper, WsStreamType.KLINE, interval)
+            await self._subscribe_stream(stream_name)
+            logger.info(f"Binance K 线订阅成功（WebSocket）：{symbol} {interval}")
+        except Exception as e:
+            logger.warning(f"Binance WebSocket 订阅失败：{e}，降级使用 HTTP 轮询")
+            # 启动 HTTP 轮询任务
+            asyncio.create_task(self._poll_klines_http(symbol_upper, interval, callback))
+
+    async def _poll_klines_http(self, symbol: str, interval: str, callback: Callable):
+        """HTTP 轮询 K 线数据（WebSocket 不可用时的降级方案）"""
+        logger.info(f"开始 HTTP 轮询 K 线：{symbol} {interval}")
+        last_kline_time = None
+
+        while symbol in [s for s in self._kline_callbacks]:
+            try:
+                await asyncio.sleep(5)  # 5 秒轮询一次
+
+                # 获取最新的 K 线
+                klines = await self.get_klines(symbol, interval, limit=1)
+                if klines:
+                    latest_kline = klines[0]
+                    # 避免重复推送同一根 K 线
+                    if last_kline_time != latest_kline.timestamp:
+                        await callback(latest_kline)
+                        last_kline_time = latest_kline.timestamp
+                        logger.debug(f"HTTP 轮询 K 线推送：{symbol} {latest_kline.close}")
+
+            except Exception as e:
+                logger.error(f"HTTP 轮询 K 线失败 {symbol} {interval}: {e}")
+                await asyncio.sleep(10)  # 失败后等待更长时间
 
     async def unsubscribe_ticker(self, symbol: str):
         """
@@ -615,6 +732,8 @@ class BinanceExchange(BaseExchange):
 
     def _parse_order(self, order: Dict) -> Order:
         """解析订单"""
+        logger.debug(f"解析订单原始数据：{order}")
+
         status_map = {
             "open": OrderStatus.OPEN,
             "closed": OrderStatus.CLOSED,
@@ -623,18 +742,31 @@ class BinanceExchange(BaseExchange):
             "rejected": OrderStatus.REJECTED,
         }
 
-        return Order(
-            id=str(order["id"]),
-            symbol=order["symbol"],
-            side=OrderSide(order["side"]),
-            type=OrderType(order["type"]),
-            amount=order["amount"],
-            price=order.get("price"),
-            status=status_map.get(order["status"], OrderStatus.PENDING),
-            filled=order.get("filled", 0),
-            remaining=order.get("remaining", 0),
-            cost=order.get("cost", 0),
-            fee=order.get("fee", {}).get("cost", 0),
-            timestamp=datetime.fromtimestamp(order["timestamp"] / 1000),
-            info=order.get("info"),
-        )
+        # 处理 side 和 type 可能为 None 的情况
+        side_val = order.get("side") or "buy"
+        type_val = order.get("type") or "market"
+
+        logger.debug(f"订单 side: {side_val}, type: {type_val}")
+
+        try:
+            result = Order(
+                id=str(order.get("id", "")),
+                symbol=order.get("symbol", ""),
+                side=OrderSide(side_val),
+                type=OrderType(type_val),
+                amount=order.get("amount", 0),
+                price=order.get("price"),
+                status=status_map.get(order.get("status"), OrderStatus.PENDING),
+                filled=order.get("filled", 0),
+                remaining=order.get("remaining", 0),
+                cost=order.get("cost", 0),
+                fee=order.get("fee", {}).get("cost", 0) if order.get("fee") else 0,
+                timestamp=datetime.fromtimestamp(order.get("timestamp", 0) / 1000) if order.get("timestamp") else datetime.now(),
+                info=order.get("info"),
+            )
+            logger.debug(f"订单解析成功：{result.id}")
+            return result
+        except Exception as e:
+            logger.error(f"订单解析失败：{e}")
+            logger.error(f"详细错误：{traceback.format_exc()}")
+            raise
