@@ -1122,6 +1122,7 @@ async def _periodic_state_push():
                     "state": status.get("state", "running"),
                     "uptime": get_uptime(),
                     "stats": status.get("stats", {}),
+                    "exchanges": status.get("exchanges", {}),  # 包含交易所连接状态
                 })
         except Exception as e:
             logger.error(f"定期推送状态失败：{e}")

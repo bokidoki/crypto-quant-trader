@@ -877,6 +877,19 @@
                     console.log('[DEBUG] 运行时间已更新:', data.uptime);
                 }
 
+                // 更新交易所连接状态
+                if (data.exchanges) {
+                    let anyConnected = false;
+                    for (const exch of Object.values(data.exchanges)) {
+                        if (exch.connected) {
+                            anyConnected = true;
+                            break;
+                        }
+                    }
+                    updateConnectionStatus(anyConnected);
+                    console.log('[DEBUG] 交易所连接状态已更新:', anyConnected);
+                }
+
                 // 引擎停止时清空余额和订单数据
                 if (data.state === 'stopped' && prevState === 'running') {
                     console.log('[DEBUG] 引擎已停止，清空余额和订单数据');
