@@ -2360,6 +2360,34 @@
             }
         }
 
+        function updateKlineChart(kline) {
+            if (!klineSeries) {
+                console.log('[DEBUG] K 线图表未初始化');
+                return;
+            }
+
+            // 转换为 Lightweight Charts 格式（秒级时间戳）
+            const candleData = {
+                time: kline.time / 1000,
+                open: kline.open,
+                high: kline.high,
+                low: kline.low,
+                close: kline.close,
+            };
+
+            // 使用 update 方法进行增量更新
+            klineSeries.update(candleData);
+
+            // 未闭合 K 线可以通过颜色区分（可选）
+            // Lightweight Charts 不直接支持单根 K 线的样式定制
+            // 但可以通过日志观察状态
+            if (!kline.is_closed) {
+                console.log('[DEBUG] 未闭合 K 线更新:', candleData);
+            } else {
+                console.log('[DEBUG] 已闭合 K 线:', candleData);
+            }
+        }
+
         // ============ 初始化 ============
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化 WebSocket
