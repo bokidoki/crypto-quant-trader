@@ -1249,13 +1249,24 @@ def handle_subscribe_klines(data):
         return
 
     exch = engine.exchanges[exchange_name]
-    if not getattr(exch, 'connected', False):
-        emit("error", {"message": f"交易所 {exchange_name} 未连接"})
-        return
 
     # 生成订阅 key
     sub_key = f"{exchange_name}:{symbol}:{interval}"
     logger.info(f"准备订阅 K 线：{sub_key}")
+
+    # 如果交易所未连接，先连接
+    if not getattr(exch, 'connected', False):
+        logger.info(f"交易所 {exchange_name} 未连接，尝试连接...")
+        try:
+            # 在后台事件循环中连接
+            bg_loop = _ensure_background_loop()
+            connect_future = asyncio.run_coroutine_threadsafe(exch.connect(), bg_loop)
+            connect_future.result(timeout=10)
+            logger.info(f"交易所 {exchange_name} 已连接")
+        except Exception as e:
+            logger.error(f"连接交易所失败：{e}")
+            emit("error", {"message": f"连接交易所失败：{str(e)}"})
+            return
 
     # 如果已订阅，先取消
     if sub_key in _active_kline_subscriptions:
