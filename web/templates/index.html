@@ -927,7 +927,10 @@
 
             socket.on('risk_alert', (data) => {
                 console.log('[DEBUG] 收到 risk_alert:', data);
-                addLog('warning', `风控警告：${data.message}`);
+                // 只在有 message 时显示警告
+                if (data && data.message) {
+                    addLog('warning', `风控警告：${data.message}`);
+                }
                 updateRiskDisplay(data);
             });
 
