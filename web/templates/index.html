@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Quant Trader</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -213,35 +215,56 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
             <!-- 行情数据表格 -->
             <div class="lg:col-span-8">
-                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
                     <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
-                        <span class="font-semibold flex items-center gap-2"><i class="bi bi-graph-up-arrow"></i>实时行情</span>
-                        <button class="text-primary hover:text-blue-400 text-sm px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="refreshTickers()">
-                            <i class="bi bi-arrow-clockwise"></i>刷新
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold flex items-center gap-2"><i class="bi bi-graph-up-arrow"></i>实时行情</span>
+                            <!-- 交易所切换 -->
+                            <select id="tickerExchangeSelector" onchange="switchTickerExchange(this.value)"
+                                class="bg-slate-900 border border-gray-600 rounded text-xs px-2 py-1 text-gray-300 focus:outline-none focus:border-primary">
+                                <option value="binance">Binance</option>
+                                <option value="okx">OKX</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="text-primary hover:text-blue-400 text-sm px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="openAddSymbolModal()">
+                                <i class="bi bi-plus-circle"></i> 添加
+                            </button>
+                            <button class="text-primary hover:text-blue-400 text-sm px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="refreshTickers()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
                     </div>
-                    <div class="p-0 overflow-x-auto">
+                    <div class="p-0 overflow-x-auto flex-1">
                         <table class="w-full">
                             <thead class="bg-slate-900/50">
                                 <tr>
-                                    <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">交易对</th>
-                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">最新价</th>
-                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">买一价</th>
-                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">卖一价</th>
-                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">24h 高</th>
-                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">24h 低</th>
-                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">24h 涨跌</th>
+                                    <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase w-1/4">交易对</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase w-[12%]">最新价</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase w-[12%]">买一价</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase w-[12%]">卖一价</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase w-[12%]">24h 高</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase w-[12%]">24h 低</th>
+                                    <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase w-[14%]">24h 涨跌</th>
                                 </tr>
                             </thead>
                             <tbody id="tickerTable" class="divide-y divide-gray-700">
-                                <tr>
-                                    <td colspan="7" class="text-center text-gray-500 py-8">
-                                        <div class="w-5 h-5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin inline-block"></div>
-                                        <span class="ml-2">正在加载行情数据...</span>
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <!-- 分页控件 -->
+                    <div class="border-t border-gray-700 px-4 py-3 bg-slate-900/50">
+                        <div class="flex items-center justify-between" data-ticker-pagination="true" data-ticker-current-page="1" data-ticker-total-pages="1">
+                            <button class="px-3 py-1 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="prevTickerPage()" id="tickerPrevBtn" disabled>
+                                <i class="bi bi-chevron-left"></i> 上一页
+                            </button>
+                            <span class="text-sm text-gray-400">
+                                第 <span id="tickerCurrentPage">1</span> 页 / 共 <span id="tickerTotalPages">1</span> 页
+                            </span>
+                            <button class="px-3 py-1 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="nextTickerPage()" id="tickerNextBtn" disabled>
+                                下一页 <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -305,7 +328,105 @@
             </div>
         </div>
 
-        <!-- 第三行：订单创建和账户余额 -->
+        <!-- 第三行：K 线图表 -->
+        <div class="grid grid-cols-1">
+            <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-96 transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span class="font-semibold">K 线图表</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="klineSymbolSelector" onchange="loadKlineChart()"
+                            class="bg-slate-900 border border-gray-600 rounded text-xs px-2 py-1 text-gray-300 focus:outline-none focus:border-primary">
+                            <option value="BTC/USDT">BTC/USDT</option>
+                            <option value="ETH/USDT">ETH/USDT</option>
+                            <option value="BNB/USDT">BNB/USDT</option>
+                            <option value="SOL/USDT">SOL/USDT</option>
+                        </select>
+                        <div class="flex gap-1">
+                            <button class="kline-timeframe-btn px-3 py-1 text-xs rounded border border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors" data-interval="1m">1m</button>
+                            <button class="kline-timeframe-btn px-3 py-1 text-xs rounded border border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors" data-interval="5m">5m</button>
+                            <button class="kline-timeframe-btn px-3 py-1 text-xs rounded border border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors" data-interval="15m">15m</button>
+                            <button class="kline-timeframe-btn px-3 py-1 text-xs rounded border border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors" data-interval="1h">1H</button>
+                            <button class="kline-timeframe-btn px-3 py-1 text-xs rounded border border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors active" data-interval="4h">4H</button>
+                            <button class="kline-timeframe-btn px-3 py-1 text-xs rounded border border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors" data-interval="1d">1D</button>
+                        </div>
+                        <button class="text-primary hover:text-blue-400 text-xs px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="loadKlineChart()">
+                            <i class="bi bi-arrow-clockwise"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div class="p-0 h-full">
+                    <div id="klineChart" class="w-full h-full" style="min-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四行：策略管理、条件单、网格交易 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
+            <!-- 策略管理 -->
+            <div class="lg:col-span-4">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-cpu"></i>
+                            <span class="font-semibold">策略管理</span>
+                        </div>
+                        <button class="text-primary hover:text-blue-400 text-xs px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="openStrategyModal()">
+                            <i class="bi bi-plus-circle"></i> 添加
+                        </button>
+                    </div>
+                    <div class="p-0">
+                        <div class="divide-y divide-gray-700" id="strategyList">
+                            <div class="p-3 text-center text-gray-500 text-sm">暂无策略</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 条件单 -->
+            <div class="lg:col-span-4">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-lightning-charge"></i>
+                            <span class="font-semibold">条件单</span>
+                        </div>
+                        <button class="text-primary hover:text-blue-400 text-xs px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="openConditionOrderModal()">
+                            <i class="bi bi-plus-circle"></i> 添加
+                        </button>
+                    </div>
+                    <div class="p-0">
+                        <div class="divide-y divide-gray-700" id="conditionOrderList">
+                            <div class="p-3 text-center text-gray-500 text-sm">暂无条件单</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 网格交易 -->
+            <div class="lg:col-span-4">
+                <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+                    <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                            <span class="font-semibold">网格交易</span>
+                        </div>
+                        <button class="text-primary hover:text-blue-400 text-xs px-3 py-1 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="openGridTradingModal()">
+                            <i class="bi bi-plus-circle"></i> 添加
+                        </button>
+                    </div>
+                    <div class="p-0">
+                        <div class="divide-y divide-gray-700" id="gridTradingList">
+                            <div class="p-3 text-center text-gray-500 text-sm">暂无网格</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四行：订单创建和账户余额 -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
             <!-- 订单创建表单 -->
             <div class="lg:col-span-5">
@@ -317,77 +438,48 @@
                     <div class="p-4">
                         <!-- 选项卡 -->
                         <div class="flex border-b border-gray-700 mb-4">
-                            <button class="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary transition-colors" data-bs-toggle="tab" data-bs-target="#marketTab" type="button">
+                            <button class="order-type-tab px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary transition-colors" data-order-type="market" type="button">
                                 <i class="bi bi-lightning-fill me-1"></i>市价单
                             </button>
-                            <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 border-b-2 border-transparent hover:border-gray-600 transition-colors" data-bs-toggle="tab" data-bs-target="#limitTab" type="button">
+                            <button class="order-type-tab px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 border-b-2 border-transparent hover:border-gray-600 transition-colors" data-order-type="limit" type="button">
                                 <i class="bi bi-currency-bitcoin me-1"></i>限价单
                             </button>
                         </div>
 
-                        <div class="tab-content">
-                            <!-- 市价单 -->
-                            <div class="tab-pane fade show active" id="marketTab">
-                                <form id="marketOrderForm" onsubmit="return false;">
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">交易所</label>
-                                        <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100" id="marketExchange">
-                                            <option value="binance">Binance (币安)</option>
-                                            <option value="okx">OKX (欧易)</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">交易对</label>
-                                        <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="marketSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">数量</label>
-                                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="marketAmount" placeholder="输入交易数量" step="0.001" min="0.001">
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <button type="button" class="bg-gradient-to-r from-success to-green-500 hover:from-green-500 hover:to-success text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('market', 'buy')">
-                                            <i class="bi bi-arrow-up"></i>买入做多
-                                        </button>
-                                        <button type="button" class="bg-gradient-to-r from-danger to-red-500 hover:from-red-500 hover:to-danger text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('market', 'sell')">
-                                            <i class="bi bi-arrow-down"></i>卖出做空
-                                        </button>
-                                    </div>
-                                </form>
+                        <form id="orderForm" onsubmit="return false;">
+                            <!-- 共用字段 -->
+                            <div class="mb-3">
+                                <label class="block text-gray-400 text-sm mb-2">交易所</label>
+                                <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100" id="orderExchange">
+                                    <option value="binance">Binance (币安)</option>
+                                    <option value="okx">OKX (欧易)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                                <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="orderSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
                             </div>
 
-                            <!-- 限价单 -->
-                            <div class="tab-pane fade" id="limitTab">
-                                <form id="limitOrderForm" onsubmit="return false;">
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">交易所</label>
-                                        <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100" id="limitExchange">
-                                            <option value="binance">Binance (币安)</option>
-                                            <option value="okx">OKX (欧易)</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">交易对</label>
-                                        <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="limitSymbol" placeholder="如：BTC/USDT" value="BTC/USDT">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">价格</label>
-                                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="limitPrice" placeholder="输入委托价格" step="0.01" min="0.01">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="block text-gray-400 text-sm mb-2">数量</label>
-                                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="limitAmount" placeholder="输入交易数量" step="0.001" min="0.001">
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <button type="button" class="bg-gradient-to-r from-success to-green-500 hover:from-green-500 hover:to-success text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('limit', 'buy')">
-                                            <i class="bi bi-arrow-up"></i>买入做多
-                                        </button>
-                                        <button type="button" class="bg-gradient-to-r from-danger to-red-500 hover:from-red-500 hover:to-danger text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('limit', 'sell')">
-                                            <i class="bi bi-arrow-down"></i>卖出做空
-                                        </button>
-                                    </div>
-                                </form>
+                            <!-- 价格字段（仅限价单显示） -->
+                            <div class="mb-3" id="priceField" style="display: none;">
+                                <label class="block text-gray-400 text-sm mb-2">价格</label>
+                                <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="orderPrice" placeholder="输入委托价格" step="0.01" min="0.01">
                             </div>
-                        </div>
+
+                            <div class="mb-3">
+                                <label class="block text-gray-400 text-sm mb-2">数量</label>
+                                <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="orderAmount" placeholder="输入交易数量" step="0.001" min="0.001">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="bg-gradient-to-r from-success to-green-500 hover:from-green-500 hover:to-success text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('buy')">
+                                    <i class="bi bi-arrow-up"></i>买入做多
+                                </button>
+                                <button type="button" class="bg-gradient-to-r from-danger to-red-500 hover:from-red-500 hover:to-danger text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="createOrder('sell')">
+                                    <i class="bi bi-arrow-down"></i>卖出做空
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -396,13 +488,22 @@
             <div class="lg:col-span-3">
                 <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
                     <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
-                        <span class="font-semibold flex items-center gap-2"><i class="bi bi-wallet2"></i>账户余额</span>
-                        <button class="text-primary hover:text-blue-400 text-sm p-1.5 rounded border border-primary hover:bg-primary/10 transition-colors" onclick="refreshBalance()">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold flex items-center gap-2"><i class="bi bi-wallet2"></i>账户余额</span>
+                            <!-- 交易所切换 -->
+                            <select id="balanceExchangeSelector" onchange="switchBalanceExchange(this.value)" 
+                                class="bg-slate-900 border border-gray-600 rounded text-xs px-2 py-1 text-gray-300 focus:outline-none focus:border-primary">
+                                <option value="binance">Binance</option>
+                                <option value="okx">OKX</option>
+                            </select>
+                        </div>
+                        <button class="text-primary hover:text-blue-400 text-sm px-3 py-1.5 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="refreshBalance()">
                             <i class="bi bi-arrow-clockwise"></i>
+                            <span class="text-xs">刷新</span>
                         </button>
                     </div>
-                    <div class="p-0">
-                        <div class="overflow-x-auto">
+                    <div class="p-0 flex flex-col h-full">
+                        <div class="overflow-x-auto flex-1">
                             <table class="w-full">
                                 <thead class="bg-slate-900/50">
                                     <tr>
@@ -420,6 +521,20 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- 分页控件 -->
+                        <div class="border-t border-gray-700 px-4 py-3 bg-slate-900/50">
+                            <div class="flex items-center justify-between" data-balance-pagination="true" data-balance-current-page="1" data-balance-total-pages="1">
+                                <button class="px-3 py-1 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="prevBalancePage()" id="balancePrevBtn" disabled>
+                                    <i class="bi bi-chevron-left"></i> 上一页
+                                </button>
+                                <span class="text-sm text-gray-400">
+                                    第 <span id="balanceCurrentPage">1</span> 页 / 共 <span id="balanceTotalPages">1</span> 页
+                                </span>
+                                <button class="px-3 py-1 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="nextBalancePage()" id="balanceNextBtn" disabled>
+                                    下一页 <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -429,9 +544,17 @@
                 <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden h-full transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
                     <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
                         <span class="font-semibold flex items-center gap-2"><i class="bi bi-list-ul"></i>最近订单</span>
-                        <button class="text-gray-400 hover:text-gray-200 text-sm p-1.5 rounded border border-gray-600 hover:bg-gray-700 transition-colors" onclick="clearOrders()">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <select id="closePercent" class="bg-slate-900 border border-gray-600 text-gray-300 text-xs rounded px-2 py-1 focus:outline-none focus:border-primary">
+                                <option value="1.0">100% 平仓</option>
+                                <option value="0.5">50% 平仓</option>
+                                <option value="0.25">25% 平仓</option>
+                            </select>
+                            <button class="text-danger hover:text-red-400 text-sm px-3 py-1.5 rounded border border-danger hover:bg-danger/10 transition-colors flex items-center gap-1" onclick="closeAllPositions()" title="平仓当前所有多头仓位">
+                                <i class="bi bi-cash-coin"></i>
+                                <span class="text-xs">一键平仓</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="p-0">
                         <div class="overflow-x-auto" style="max-height: 300px; overflow-y: auto;">
@@ -442,16 +565,19 @@
                                         <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">交易对</th>
                                         <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">方向</th>
                                         <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">数量</th>
+                                        <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">价格</th>
                                         <th class="text-left p-3 text-gray-400 font-medium text-xs uppercase">状态</th>
+                                        <th class="text-right p-3 text-gray-400 font-medium text-xs uppercase">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="orderTable" class="divide-y divide-gray-700">
                                     <tr>
-                                        <td colspan="5" class="text-center text-gray-500 py-8">暂无订单</td>
+                                        <td colspan="7" class="text-center text-gray-500 py-8">暂无订单</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+                        <div id="orderPagination"></div>
                     </div>
                 </div>
             </div>
@@ -462,8 +588,9 @@
             <div class="bg-slate-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:border-primary hover:shadow-lg hover:shadow-primary/10">
                 <div class="bg-primary/10 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
                     <span class="font-semibold flex items-center gap-2"><i class="bi bi-terminal"></i>运行日志</span>
-                    <button class="text-gray-400 hover:text-gray-200 text-sm px-3 py-1.5 rounded border border-gray-600 hover:bg-gray-700 transition-colors flex items-center gap-1" onclick="clearLog()">
-                        <i class="bi bi-trash me-1"></i>清空
+                    <button class="text-primary hover:text-blue-400 text-sm px-3 py-1.5 rounded border border-primary hover:bg-primary/10 transition-colors flex items-center gap-1" onclick="clearLog()">
+                        <i class="bi bi-trash"></i>
+                        <span class="text-xs">清空</span>
                     </button>
                 </div>
                 <div class="p-0">
@@ -478,14 +605,207 @@
         </div>
     </div>
 
+    <!-- 添加币种模态框 -->
+    <div id="addSymbolModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                    <i class="bi bi-plus-circle text-primary"></i> 添加交易对
+                </h3>
+                <button class="text-gray-400 hover:text-gray-200" onclick="closeAddSymbolModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">选择交易所</label>
+                    <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100" id="addSymbolExchange">
+                        <option value="binance">Binance (币安)</option>
+                        <option value="okx">OKX (欧易)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                    <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-100 placeholder-gray-500" id="addSymbolInput" placeholder="如：BTC/USDT" value="BTC/USDT">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors" onclick="closeAddSymbolModal()">
+                        取消
+                    </button>
+                    <button class="flex-1 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-primary text-white font-medium py-2.5 px-4 rounded-lg transition-all" onclick="addSymbol()">
+                        确定添加
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 策略管理模态框 -->
+    <div id="strategyModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                    <i class="bi bi-cpu text-primary"></i> 添加策略
+                </h3>
+                <button class="text-gray-400 hover:text-gray-200" onclick="closeStrategyModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">策略类型</label>
+                    <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary text-gray-100" id="strategyType" onchange="updateStrategyParams()">
+                        <option value="sma_cross">SMA 交叉</option>
+                        <option value="ema_trend">EMA 趋势</option>
+                        <option value="macd">MACD</option>
+                        <option value="bollinger">布林带</option>
+                        <option value="rsi_reversion">RSI 极值</option>
+                        <option value="kdj">KDJ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                    <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="strategySymbol" value="BTC/USDT">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">周期</label>
+                    <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="strategyTimeframe">
+                        <option value="1h">1 小时</option>
+                        <option value="4h" selected>4 小时</option>
+                        <option value="1d">1 天</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">仓位数量</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="strategyPositionSize" value="0.001" step="0.001">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors" onclick="closeStrategyModal()">
+                        取消
+                    </button>
+                    <button class="flex-1 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-primary text-white font-medium py-2.5 px-4 rounded-lg transition-all" onclick="addStrategy()">
+                        添加策略
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 条件单模态框 -->
+    <div id="conditionOrderModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                    <i class="bi bi-lightning-charge text-primary"></i> 创建条件单
+                </h3>
+                <button class="text-gray-400 hover:text-gray-200" onclick="closeConditionOrderModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                    <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="conditionSymbol" value="BTC/USDT">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">条件类型</label>
+                    <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="conditionType">
+                        <option value="price_above">价格突破</option>
+                        <option value="price_below">价格跌破</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">触发价格 (USDT)</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="triggerPrice" value="70000">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">执行方向</label>
+                    <select class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="conditionSide">
+                        <option value="buy">买入</option>
+                        <option value="sell">卖出</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">执行数量</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="conditionAmount" value="0.001" step="0.001">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">止盈价格 (可选)</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="takeProfit" placeholder="如：75000">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">止损价格 (可选)</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="stopLoss" placeholder="如：65000">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors" onclick="closeConditionOrderModal()">
+                        取消
+                    </button>
+                    <button class="flex-1 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-primary text-white font-medium py-2.5 px-4 rounded-lg transition-all" onclick="submitConditionOrder()">
+                        创建条件单
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 网格交易模态框 -->
+    <div id="gridTradingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                    <i class="bi bi-grid-3x3-gap text-primary"></i> 创建网格交易
+                </h3>
+                <button class="text-gray-400 hover:text-gray-200" onclick="closeGridTradingModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">交易对</label>
+                    <input type="text" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="gridSymbol" value="BTC/USDT">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-2">价格下限</label>
+                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="gridLowerPrice" value="60000">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-2">价格上限</label>
+                        <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="gridUpperPrice" value="70000">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">网格数量</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="gridNum" value="10" min="2" max="100">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-2">投入金额 (USDT)</label>
+                    <input type="number" class="w-full bg-slate-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100" id="gridAmount" value="1000" min="10">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors" onclick="closeGridTradingModal()">
+                        取消
+                    </button>
+                    <button class="flex-1 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-primary text-white font-medium py-2.5 px-4 rounded-lg transition-all" onclick="submitGridTrading()">
+                        创建网格
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 
     <script>
         // ============ 全局变量 ============
         let socket = null;
         let isConnected = false;
         let recentOrders = [];
+        let currentEngineState = 'stopped';
         const defaultTickers = [
             { exchange: 'binance', symbol: 'BTC/USDT', name: 'BTC/USDT' },
             { exchange: 'binance', symbol: 'ETH/USDT', name: 'ETH/USDT' },
@@ -493,20 +813,44 @@
             { exchange: 'binance', symbol: 'SOL/USDT', name: 'SOL/USDT' }
         ];
 
+        // 分页配置
+        const BALANCE_ITEMS_PER_PAGE = 5;
+        const TICKER_ITEMS_PER_PAGE = 6;
+        const ORDER_ITEMS_PER_PAGE = 5;
+
+        // 分页状态
+        let tickerPagination = { currentPage: 1, totalPages: 1 };
+        let balancePagination = { currentPage: 1, totalPages: 1 };
+        let orderPagination = { currentPage: 1, totalPages: 1 };
+
+        // 数据缓存
+        let allBalances = [];
+        let allTickers = [];
+        let closedOrders = {};  // 记录已平仓的订单 ID
+
         // ============ WebSocket 连接 ============
         function initSocket() {
-            socket = io();
+            // 启用 Socket.IO 详细日志
+            io.protocol = 5;
+            socket = io({
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 10,
+                transports: ['websocket', 'polling']
+            });
 
             socket.on('connect', () => {
                 isConnected = true;
                 updateConnectionStatus(true);
                 addLog('success', 'WebSocket 已连接');
+                console.log('[DEBUG] Socket.IO connected, socket.id:', socket.id);
                 // 连接后获取初始数据
                 setTimeout(() => {
                     refreshConfig();
                     refreshExchanges();
                     refreshTickers();
                     refreshRisk();
+                    refreshStatus(); // 获取初始引擎状态
                 }, 500);
             });
 
@@ -514,56 +858,104 @@
                 isConnected = false;
                 updateConnectionStatus(false);
                 addLog('warning', 'WebSocket 已断开');
+                console.log('[DEBUG] Socket.IO disconnected');
             });
 
             socket.on('connected', (data) => {
                 addLog('success', data.message || '服务器已连接');
+                console.log('[DEBUG] connected event:', data);
             });
 
             socket.on('engine_status', (data) => {
+                console.log('[DEBUG] 收到 engine_status:', data);
+                const prevState = currentEngineState;
                 updateEngineStatus(data.state);
+                currentEngineState = data.state;
+
+                if (data.uptime) {
+                    document.getElementById('uptime').textContent = data.uptime;
+                    console.log('[DEBUG] 运行时间已更新:', data.uptime);
+                }
+
+                // 引擎停止时清空余额和订单数据
+                if (data.state === 'stopped' && prevState === 'running') {
+                    console.log('[DEBUG] 引擎已停止，清空余额和订单数据');
+                    balancesByExchange = {};
+                    exchangePageInfo = {};
+                    currentBalanceExchange = null;
+                    recentOrders = [];
+                    // 直接渲染空状态，不调用 API（因为引擎已停止）
+                    renderBalanceTable();
+                    renderRecentOrders();
+                }
+
+                // 引擎启动时自动刷新余额和订单
+                if (data.state === 'running' && prevState === 'stopped') {
+                    console.log('[DEBUG] 引擎已启动，刷新余额和订单数据');
+                    setTimeout(() => {
+                        refreshBalance();
+                        refreshOrders();
+                    }, 1000);
+                }
             });
 
             socket.on('ticker_update', (data) => {
+                console.log('[DEBUG] 收到 ticker_update:', data);
                 updateTickerRow(data);
             });
 
             socket.on('order_created', (data) => {
+                console.log('[DEBUG] 收到 order_created:', data);
                 addLog('success', `订单创建成功：${data.side.toUpperCase()} ${data.amount} ${data.symbol}`);
+                // 添加到本地缓存（实时通知，不等待 API 刷新）
                 addRecentOrder(data);
+                // 触发订单历史刷新
+                refreshOrders();
             });
 
             socket.on('order_filled', (data) => {
+                console.log('[DEBUG] 收到 order_filled:', data);
                 addLog('success', `订单已成交：${data.id}`);
                 updateOrderStatus(data.id, 'filled');
                 refreshBalance();
             });
 
             socket.on('balance_update', (data) => {
+                console.log('[DEBUG] 收到 balance_update:', data);
                 updateBalanceDisplay(data);
             });
 
             socket.on('risk_alert', (data) => {
+                console.log('[DEBUG] 收到 risk_alert:', data);
                 addLog('warning', `风控警告：${data.message}`);
                 updateRiskDisplay(data);
             });
 
             socket.on('error', (data) => {
+                console.error('[DEBUG] 收到 error:', data);
                 addLog('error', data.message || '发生错误');
             });
 
             socket.on('exchange_disconnected', (data) => {
+                console.log('[DEBUG] 收到 exchange_disconnected:', data);
                 addLog('warning', `${data.exchange} 已断开连接`);
                 refreshExchanges();
             });
 
             socket.on('exchange_connected', (data) => {
+                console.log('[DEBUG] 收到 exchange_connected:', data);
                 addLog('success', `${data.exchange} 已连接`);
                 refreshExchanges();
             });
 
             socket.on('exchanges_update', (data) => {
+                console.log('[DEBUG] 收到 exchanges_update:', data);
                 refreshExchanges();
+            });
+
+            // Socket.IO 内部日志
+            socket.onAny((event, ...args) => {
+                console.log('[SOCKET] 事件:', event, '数据:', args);
             });
         }
 
@@ -638,18 +1030,31 @@
             }
         }
 
-        function updateBalanceDisplay(balances) {
-            const tbody = document.getElementById('balanceTable');
-            let html = '';
+        // 按交易所分组的余额数据
+        let balancesByExchange = {};
 
+        function updateBalanceDisplay(balances) {
+            // 从行情数据中获取需要显示的币种列表
+            const tickerSymbols = new Set();
+            defaultTickers.forEach(t => {
+                // 从 BTC/USDT 提取 BTC
+                const baseCurrency = t.symbol.split('/')[0];
+                tickerSymbols.add(baseCurrency);
+            });
+
+            // 按交易所收集余额数据
             for (const [exchange, data] of Object.entries(balances)) {
+                balancesByExchange[exchange] = [];
+                
                 if (data.error) {
-                    html += `<tr><td colspan="3" class="text-danger p-3">${exchange}: ${data.error}</td></tr>`;
+                    balancesByExchange[exchange].push({ currency: '错误', free: 0, error: data.error });
                     continue;
                 }
-                // 处理两种格式：
-                // 1. { "USDT": 10000.0 } - 直接是数字
-                // 2. { "USDT": { "free": 10000.0, "total": 10000.0 } } - 对象格式
+
+                let usdtItem = null;
+                const otherItems = [];
+
+                // 只显示行情中有的币种且余额>0
                 for (const [currency, info] of Object.entries(data)) {
                     let free, total;
                     if (typeof info === 'number') {
@@ -661,20 +1066,46 @@
                     } else {
                         continue;
                     }
-                    
-                    if (free > 0 || total > 0) {
-                        html += `
-                            <tr>
-                                <td class="p-3"><span class="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">${exchange}</span></td>
-                                <td class="p-3">${currency}</td>
-                                <td class="p-3 text-right font-bold">${formatNumber(free, 4)}</td>
-                            </tr>
-                        `;
+
+                    // USDT 始终显示（只要有余额），其他币种需要存在于行情中
+                    if ((free > 0 || total > 0)) {
+                        const shouldShow = currency === 'USDT' || tickerSymbols.has(currency);
+                        if (shouldShow) {
+                            if (currency === 'USDT') {
+                                usdtItem = { currency, free, total };
+                            } else {
+                                otherItems.push({ currency, free, total });
+                            }
+                        }
                     }
                 }
+                
+                // USDT 放第一位，其他币种按字母排序
+                balancesByExchange[exchange] = [];
+                if (usdtItem) {
+                    balancesByExchange[exchange].push(usdtItem);
+                }
+                otherItems.sort((a, b) => a.currency.localeCompare(b.currency));
+                balancesByExchange[exchange].push(...otherItems);
             }
 
-            tbody.innerHTML = html || '<tr><td colspan="3" class="text-center text-gray-500 py-8">点击刷新按钮加载余额</td></tr>';
+            // 合并所有交易所的余额用于分页
+            allBalances = [];
+            for (const [exchange, items] of Object.entries(balancesByExchange)) {
+                items.forEach(item => {
+                    allBalances.push({ exchange, ...item });
+                });
+            }
+
+            // 计算分页
+            const totalPages = Math.ceil(allBalances.length / BALANCE_ITEMS_PER_PAGE) || 1;
+            balancePagination.totalPages = totalPages;
+            if (balancePagination.currentPage > totalPages) {
+                balancePagination.currentPage = 1;
+            }
+
+            // 渲染表格
+            renderBalanceTable();
         }
 
         function updateRiskDisplay(risk) {
@@ -695,16 +1126,28 @@
         }
 
         function addRecentOrder(order) {
-            recentOrders.unshift({
-                time: new Date().toLocaleTimeString(),
-                symbol: order.symbol,
-                side: order.side,
-                amount: order.amount,
-                status: order.status || 'pending'
-            });
+            // 检查是否已存在
+            const existing = recentOrders.find(o => o.id === order.id);
+            if (existing) {
+                // 更新现有订单
+                existing.status = order.status || existing.status;
+                existing.filled = order.filled || existing.filled;
+            } else {
+                // 添加新订单
+                recentOrders.unshift({
+                    id: order.id,
+                    time: new Date().toLocaleTimeString(),
+                    symbol: order.symbol,
+                    side: order.side,
+                    amount: order.amount,
+                    price: order.price || 0,
+                    filled: order.filled || 0,
+                    status: order.status || 'pending'
+                });
+            }
 
-            // 只保留最近 10 条
-            if (recentOrders.length > 10) recentOrders.pop();
+            // 只保留最近 50 条
+            if (recentOrders.length > 50) recentOrders = recentOrders.slice(0, 50);
 
             renderRecentOrders();
         }
@@ -718,27 +1161,77 @@
         function renderRecentOrders() {
             const tbody = document.getElementById('orderTable');
             if (recentOrders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-8">暂无订单</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-8">暂无订单</td></tr>';
                 return;
             }
 
+            // 计算分页
+            const totalPages = Math.ceil(recentOrders.length / ORDER_ITEMS_PER_PAGE) || 1;
+            orderPagination.totalPages = totalPages;
+            if (orderPagination.currentPage > totalPages) {
+                orderPagination.currentPage = 1;
+            }
+
+            // 获取当前页的订单
+            const startIndex = (orderPagination.currentPage - 1) * ORDER_ITEMS_PER_PAGE;
+            const endIndex = startIndex + ORDER_ITEMS_PER_PAGE;
+            const currentOrders = recentOrders.slice(startIndex, endIndex);
+
             let html = '';
-            for (const order of recentOrders) {
-                const statusClass = order.status === 'filled' ? 'text-success' :
-                                   order.status === 'cancelled' ? 'text-gray-500' : 'text-warning';
-                const statusText = order.status === 'filled' ? '已成交' :
-                                  order.status === 'cancelled' ? '已取消' : '处理中';
+            for (const order of currentOrders) {
+                // 支持多种状态：closed/filled 都表示已成交
+                const isFilled = order.status === 'filled' || order.status === 'closed';
+                const isCancelled = order.status === 'cancelled' || order.status === 'canceled' || order.status === 'rejected';
+                const statusClass = isFilled ? 'text-success' :
+                                   isCancelled ? 'text-gray-500' : 'text-warning';
+                const statusText = isFilled ? '已成交' :
+                                  isCancelled ? '已取消' : '处理中';
+                const filledPercent = order.amount > 0 ? ((order.filled || 0) / order.amount * 100).toFixed(1) : '0';
+                // 只有已成交且未平仓的订单才显示平仓按钮
+                const canClose = isFilled && (order.side === 'buy' || order.side === 'sell') && !closedOrders[order.id];
                 html += `
                     <tr class="hover:bg-gray-700/30 transition-colors">
                         <td class="p-3 text-gray-400 text-sm">${order.time}</td>
                         <td class="p-3">${order.symbol}</td>
                         <td class="p-3 ${order.side === 'buy' ? 'text-success' : 'text-danger'}">${order.side === 'buy' ? '买入' : '卖出'}</td>
-                        <td class="p-3 text-right">${formatNumber(order.amount, 4)}</td>
-                        <td class="p-3 ${statusClass}">${statusText}</td>
+                        <td class="p-3 text-right text-gray-300">${formatNumber(order.amount, 4)}</td>
+                        <td class="p-3 text-right text-gray-400 text-sm">${order.price ? formatPrice(order.price) : '-'}</td>
+                        <td class="p-3 ${statusClass}">${statusText} ${order.filled > 0 ? `(${filledPercent}%)` : ''}</td>
+                        <td class="p-3 text-right">
+                            ${canClose ? `<button onclick="closePosition({id:'${order.id}',symbol:'${order.symbol}',amount:${order.amount},side:'${order.side}'})" class="text-xs px-3 py-1 rounded border border-primary/50 text-primary hover:bg-primary/10 transition-colors">平仓</button>` : ''}
+                        </td>
                     </tr>
                 `;
             }
             tbody.innerHTML = html;
+
+            // 渲染分页控件
+            renderOrderPagination();
+        }
+
+        function renderOrderPagination() {
+            const container = document.getElementById('orderPagination');
+            if (!container) return;
+
+            if (orderPagination.totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="flex items-center justify-center gap-2 py-3">';
+            html += `<button onclick="orderPagination.currentPage=${orderPagination.currentPage - 1}; renderRecentOrders()" ${orderPagination.currentPage === 1 ? 'disabled class="px-3 py-1 text-gray-600"' : 'class="px-3 py-1 text-primary hover:bg-primary/10 rounded"'}>«</button>`;
+
+            for (let i = 1; i <= orderPagination.totalPages; i++) {
+                if (i === orderPagination.currentPage) {
+                    html += `<span class="px-3 py-1 bg-primary text-white rounded">${i}</span>`;
+                } else {
+                    html += `<button onclick="orderPagination.currentPage=${i}; renderRecentOrders()" class="px-3 py-1 text-primary hover:bg-primary/10 rounded">${i}</button>`;
+                }
+            }
+
+            html += `<button onclick="orderPagination.currentPage=${orderPagination.currentPage + 1}; renderRecentOrders()" ${orderPagination.currentPage === orderPagination.totalPages ? 'disabled class="px-3 py-1 text-gray-600"' : 'class="px-3 py-1 text-primary hover:bg-primary/10 rounded"'}>»</button>`;
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         function clearOrders() {
@@ -746,11 +1239,216 @@
             renderRecentOrders();
         }
 
+        async function closePosition(order) {
+            const percent = document.getElementById('closePercent').value;
+            const percentText = (parseFloat(percent) * 100).toFixed(0);
+            const closeAmount = order.amount * percent;
+            const closeSide = order.side === 'buy' ? '卖出' : '买入';
+            const sideClass = order.side === 'buy' ? 'text-success' : 'text-danger';
+            const sideText = order.side === 'buy' ? '多' : '空';
+
+            // 显示自定义确认框
+            showConfirmModal({
+                title: '确认平仓',
+                content: `
+                    <div class="text-center">
+                        <p class="text-gray-300 mb-4">确认要${percentText}% 平仓吗？</p>
+                        <div class="bg-slate-900 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-gray-400">交易对 <span class="text-white font-medium">${order.symbol}</span></p>
+                            <p class="text-sm text-gray-400 mt-2">方向 <span class="${sideClass} font-medium">${sideText}头 (${order.side === 'buy' ? '买入' : '卖出'})</span></p>
+                            <p class="text-sm text-gray-400 mt-2">数量 <span class="text-white font-medium">${closeAmount}</span></p>
+                        </div>
+                        <p class="text-xs text-gray-500">平仓将创建反向订单</p>
+                    </div>
+                `,
+                confirmText: '确认平仓',
+                cancelText: '取消',
+                onConfirm: async () => {
+                    try {
+                        const response = await fetch('/api/close', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                exchange: 'binance',
+                                symbol: order.symbol,
+                                amount: closeAmount,
+                                side: order.side,
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            addLog('success', `平仓成功：${closeAmount} ${order.symbol}`);
+                            // 标记为已平仓
+                            closedOrders[order.id] = true;
+                            renderRecentOrders();
+                            refreshRisk();
+                        } else {
+                            addLog('error', `平仓失败：${data.error}`);
+                        }
+                    } catch (e) {
+                        addLog('error', `平仓异常：${e.message}`);
+                    }
+                }
+            });
+        }
+
+        // 自定义确认框
+        function showConfirmModal(options) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-slate-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+                    <h3 class="text-lg font-semibold text-white mb-4">${options.title || '确认'}</h3>
+                    <div class="text-gray-300 mb-6 w-full">${options.content || ''}</div>
+                    <div class="flex gap-3">
+                        <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2.5 px-4 rounded-lg transition-all" onclick="this.closest('.fixed').remove()">
+                            ${options.cancelText || '取消'}
+                        </button>
+                        <button class="flex-1 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-primary text-white font-medium py-2.5 px-4 rounded-lg transition-all" id="confirmBtn">
+                            ${options.confirmText || '确认'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const confirmBtn = modal.querySelector('#confirmBtn');
+            confirmBtn.onclick = async () => {
+                if (options.onConfirm) {
+                    await options.onConfirm();
+                }
+                modal.remove();
+            };
+
+            // 键盘响应：Enter 确认，Esc 取消
+            const handleKeyDown = (e) => {
+                if (e.key === 'Enter') {
+                    document.removeEventListener('keydown', handleKeyDown);
+                    confirmBtn.click();
+                } else if (e.key === 'Escape') {
+                    document.removeEventListener('keydown', handleKeyDown);
+                    modal.remove();
+                }
+            };
+            document.addEventListener('keydown', handleKeyDown);
+
+            // 关闭时移除键盘监听
+            const originalRemove = modal.remove;
+            modal.remove = function() {
+                document.removeEventListener('keydown', handleKeyDown);
+                return originalRemove.call(this);
+            };
+        }
+
+        async function closeAllPositions() {
+            // 获取所有未平仓的订单（支持多种状态：closed/filled，支持做多和做空）
+            const longOrders = recentOrders.filter(o => o.side === 'buy' && (o.status === '已成交' || o.status === 'closed' || o.status === 'filled') && !closedOrders[o.id]);
+            const shortOrders = recentOrders.filter(o => o.side === 'sell' && (o.status === '已成交' || o.status === 'closed' || o.status === 'filled') && !closedOrders[o.id]);
+
+            if (longOrders.length === 0 && shortOrders.length === 0) {
+                addLog('warning', '没有可平仓的仓位');
+                return;
+            }
+
+            const percent = document.getElementById('closePercent').value;
+            const percentText = (parseFloat(percent) * 100).toFixed(0);
+            const longCount = longOrders.length;
+            const shortCount = shortOrders.length;
+            const totalMsg = `${longCount > 0 ? `${longCount}个多头` : ''}${longCount > 0 && shortCount > 0 ? '、' : ''}${shortCount > 0 ? `${shortCount}个空头` : ''}`;
+
+            // 使用自定义确认框
+            showConfirmModal({
+                title: '批量平仓确认',
+                content: `
+                    <div class="text-center">
+                        <p class="text-gray-300 mb-4">确认要${percentText}% 平仓吗？</p>
+                        <div class="bg-slate-900 rounded-lg p-4 mb-4">
+                            ${longCount > 0 ? `<p class="text-sm text-success">多头仓位：${longCount} 个</p>` : ''}
+                            ${shortCount > 0 ? `<p class="text-sm text-danger">空头仓位：${shortCount} 个</p>` : ''}
+                            <p class="text-sm text-gray-400 mt-2">总计：${longCount + shortCount} 个仓位</p>
+                        </div>
+                        <p class="text-xs text-amber-500">⚠️ 平仓将创建反向订单</p>
+                    </div>
+                `,
+                confirmText: '确认平仓',
+                cancelText: '取消',
+                onConfirm: async () => {
+                    try {
+                        let successCount = 0;
+                        let failCount = 0;
+
+                        // 平掉所有多头仓位（创建 sell 订单）
+                        for (const order of longOrders) {
+                            const closeAmount = order.amount * percent;
+                            if (closeAmount <= 0) continue;
+
+                            const response = await fetch('/api/close', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    exchange: 'binance',
+                                    symbol: order.symbol,
+                                    amount: closeAmount,
+                                    side: 'buy',  // 原订单是 buy，平仓用 sell
+                                })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                successCount++;
+                                addLog('success', `平多成功：${closeAmount} ${order.symbol}`);
+                                closedOrders[order.id] = true;
+                            } else {
+                                failCount++;
+                                addLog('error', `平多失败：${order.symbol} - ${data.error}`);
+                            }
+                        }
+
+                        // 平掉所有空头仓位（创建 buy 订单）
+                        for (const order of shortOrders) {
+                            const closeAmount = order.amount * percent;
+                            if (closeAmount <= 0) continue;
+
+                            const response = await fetch('/api/close', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    exchange: 'binance',
+                                    symbol: order.symbol,
+                                    amount: closeAmount,
+                                    side: 'sell',  // 原订单是 sell，平仓用 buy
+                                })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                successCount++;
+                                addLog('success', `平空成功：${closeAmount} ${order.symbol}`);
+                                closedOrders[order.id] = true;
+                            } else {
+                                failCount++;
+                                addLog('error', `平空失败：${order.symbol} - ${data.error}`);
+                            }
+                        }
+
+                        addLog('info', `平仓完成：成功${successCount}，失败${failCount}`);
+                        renderRecentOrders();
+                        refreshRisk();
+                    } catch (error) {
+                        addLog('error', `平仓异常：${error.message}`);
+                    }
+                }
+            });
+        }
+
         // ============ 数据刷新函数 ============
         async function refreshConfig() {
+            console.log('[DEBUG] 刷新配置...');
             try {
                 const response = await fetch('/api/config');
                 const data = await response.json();
+                console.log('[DEBUG] 配置响应:', data);
 
                 // 模式
                 const mode = data.risk?.enabled ? '实盘' : '测试';
@@ -758,46 +1456,64 @@
                 document.getElementById('configMode').className = `px-2 py-1 rounded text-xs font-medium ${data.risk?.enabled ? 'bg-success text-white' : 'bg-warning text-slate-900'}`;
 
                 // 风控参数
-                document.getElementById('configStopLoss').textContent = `-${((data.risk?.stop_loss_percent || 0.05) * 100).toFixed(1)}%`;
-                document.getElementById('configTakeProfit').textContent = `+${((data.risk?.take_profit_percent || 0.1) * 100).toFixed(1)}%`;
-                document.getElementById('configMaxPosition').textContent = `${data.risk?.max_position_size || 'N/A'} USDT`;
+                document.getElementById('configStopLoss').textContent = `-${(data.risk?.stop_loss_percent || 5.0).toFixed(1)}%`;
+                document.getElementById('configTakeProfit').textContent = `+${(data.risk?.take_profit_percent || 10.0).toFixed(1)}%`;
+                document.getElementById('configMaxPosition').textContent = `${data.risk?.max_position || 100.0} USDT`;
                 document.getElementById('configMaxOrder').textContent = `${data.risk?.max_order_size || 'N/A'} USDT`;
 
                 // 更新风控面板
-                document.getElementById('riskStopLoss').textContent = `-${((data.risk?.stop_loss_percent || 0.05) * 100).toFixed(2)}%`;
-                document.getElementById('riskTakeProfit').textContent = `+${((data.risk?.take_profit_percent || 0.1) * 100).toFixed(2)}%`;
-
-                addLog('info', '配置已更新');
+                document.getElementById('riskStopLoss').textContent = `-${(data.risk?.stop_loss_percent || 5.0).toFixed(2)}%`;
+                document.getElementById('riskTakeProfit').textContent = `+${(data.risk?.take_profit_percent || 10.0).toFixed(2)}%`;
+                document.getElementById('riskDailyLimit').textContent = `-${(data.risk?.max_daily_loss || 50.0).toFixed(2)} USDT`;
             } catch (error) {
-                addLog('error', `获取配置失败：${error.message}`);
+                console.error('[DEBUG] 刷新配置失败:', error);
+                // 静默失败，使用默认值
+                document.getElementById('configMode').textContent = '测试';
+                document.getElementById('configStopLoss').textContent = '-5.0%';
+                document.getElementById('configTakeProfit').textContent = '+10.0%';
+                document.getElementById('configMaxPosition').textContent = '100 USDT';
+                document.getElementById('configMaxOrder').textContent = 'N/A';
             }
         }
 
         async function refreshExchanges() {
+            console.log('[DEBUG] 刷新交易所状态...');
             try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
+                console.log('[DEBUG] 状态响应:', data);
                 const tbody = document.getElementById('exchangeList');
-                
+
                 // 交易所名称映射
                 const exchangeNames = {
                     'binance': 'Binance',
                     'okx': 'OKX'
                 };
 
-                if (data.exchanges && Object.keys(data.exchanges).length > 0) {
+                // 检查引擎是否运行
+                const isEngineRunning = data.state === 'running';
+
+                if (data.exchanges && typeof data.exchanges === 'object' && Object.keys(data.exchanges).length > 0) {
                     let html = '';
                     for (const [name, info] of Object.entries(data.exchanges)) {
                         const connected = info.connected || info.status === 'connected';
                         const displayName = exchangeNames[name] || name;
+                        const buttonDisabled = !isEngineRunning ? 'disabled class="px-3 py-1 text-xs rounded bg-gray-600 text-gray-400 cursor-not-allowed"' : '';
+                        const buttonClass = connected
+                            ? 'bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/30'
+                            : 'bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white border border-green-500/30';
+                        const buttonText = connected ? '断开' : '连接';
+
                         html += `
                             <div class="p-3 bg-transparent flex items-center justify-between">
                                 <span class="text-gray-300">${displayName}</span>
                                 <div class="flex items-center gap-2">
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-blue-500/20 text-primary border border-primary' : 'bg-yellow-500/20 text-warning border border-warning'}">
-                                        ${connected ? '<i class="bi bi-check-circle-fill me-1"></i>已连接' : '<i class="bi bi-x-circle-fill me-1"></i>断开'}
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">
+                                        ${connected ? '已连接' : '已断开'}
                                     </span>
-                                    ${connected ? `<button class="px-2 py-1 text-xs rounded border border-danger text-danger hover:bg-danger hover:text-white transition-colors" onclick="disconnectExchange('${name}')">断开</button>` : `<button class="px-2 py-1 text-xs rounded border border-success text-success hover:bg-success hover:text-white transition-colors" onclick="connectExchange('${name}')">连接</button>`}
+                                    <button ${buttonDisabled} onclick="toggleExchange('${name}')" class="px-3 py-1 text-xs rounded transition-colors ${buttonClass}">
+                                        ${buttonText}
+                                    </button>
                                 </div>
                             </div>
                         `;
@@ -819,77 +1535,144 @@
             }
         }
 
+        let isFirstLoad = true;
+
         async function refreshTickers() {
-            const tbody = document.getElementById('tickerTable');
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="w-5 h-5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin inline-block"></div><span class="ms-2 text-gray-400">加载中...</span></td></tr>';
-
-            let html = '';
-            for (const ticker of defaultTickers) {
-                try {
-                    const response = await fetch(`/api/ticker/${ticker.exchange}/${encodeURIComponent(ticker.symbol)}`);
-                    const data = await response.json();
-
-                    if (data.error) {
-                        html += `
-                            <tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
-                                <td class="p-3 font-bold">${ticker.name}</td>
-                                <td colspan="6" class="text-danger text-center">数据获取失败</td>
-                            </tr>
-                        `;
-                    } else {
-                        const changeClass = (data.change || 0) >= 0 ? 'text-success' : 'text-danger';
-                        const changeSign = (data.change || 0) >= 0 ? '+' : '';
-                        html += `
-                            <tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
-                                <td class="p-3 font-bold">${ticker.name}</td>
-                                <td class="text-right ticker-price" data-price="${data.last}">${formatPrice(data.last)}</td>
-                                <td class="text-right">${formatPrice(data.bid || 0)}</td>
-                                <td class="text-right">${formatPrice(data.ask || 0)}</td>
-                                <td class="text-right text-gray-400">${formatPrice(data.high || 0)}</td>
-                                <td class="text-right text-gray-400">${formatPrice(data.low || 0)}</td>
-                                <td class="text-right ${changeClass}">${changeSign}${(data.change || 0).toFixed(2)}%</td>
-                            </tr>
-                        `;
+            console.log('[DEBUG] 刷新行情...');
+            // 并行请求所有行情数据
+            const results = await Promise.allSettled(
+                defaultTickers.map(async (ticker) => {
+                    try {
+                        const url = `/api/ticker/${ticker.exchange}/${encodeURIComponent(ticker.symbol)}`;
+                        console.log('[DEBUG] 请求行情:', url);
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        console.log('[DEBUG] 行情响应:', ticker.symbol, data);
+                        return { symbol: ticker.symbol, name: ticker.name, data: data, error: null };
+                    } catch (error) {
+                        console.error('[DEBUG] 行情请求失败:', ticker.symbol, error);
+                        return { symbol: ticker.symbol, name: ticker.name, data: null, error: error };
                     }
-                } catch (error) {
-                    html += `
-                        <tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
-                            <td class="p-3">${ticker.name}</td>
-                            <td colspan="6" class="text-danger text-center">请求失败</td>
-                        </tr>
-                    `;
+                })
+            );
+
+            // 收集所有数据
+            allTickers = [];
+            for (const result of results) {
+                if (result.status === 'rejected') {
+                    allTickers.push({ symbol: 'unknown', name: 'Unknown', error: true });
+                } else if (result.value.error || result.value.data?.error) {
+                    allTickers.push({ ...result.value, error: true });
+                } else {
+                    allTickers.push(result.value);
                 }
             }
-            tbody.innerHTML = html || '<tr><td colspan="7" class="text-center text-gray-500 py-8">暂无行情数据</td></tr>';
+
+            // 计算分页
+            const totalPages = Math.ceil(allTickers.length / TICKER_ITEMS_PER_PAGE) || 1;
+            tickerPagination.totalPages = totalPages;
+            tickerPagination.currentPage = Math.min(tickerPagination.currentPage, totalPages);
+
+            // 始终重新渲染表格（支持添加新币种）
+            renderTickerTable();
+            isFirstLoad = false;
         }
 
         async function refreshBalance() {
+            console.log('[DEBUG] 刷新余额...');
             try {
                 const response = await fetch('/api/balance');
                 const data = await response.json();
+                console.log('[DEBUG] 余额响应:', data);
                 updateBalanceDisplay(data);
                 addLog('info', '余额已更新');
             } catch (error) {
+                console.error('[DEBUG] 获取余额失败:', error);
                 addLog('error', `获取余额失败：${error.message}`);
             }
         }
 
         async function refreshRisk() {
+            console.log('[DEBUG] 刷新风控...');
             try {
                 const response = await fetch('/api/risk');
                 const data = await response.json();
+                console.log('[DEBUG] 风控响应:', data);
                 if (!data.error) {
                     updateRiskDisplay(data);
                 }
             } catch (error) {
+                console.error('[DEBUG] 刷新风控失败:', error);
                 // 静默失败
             }
+        }
+
+        async function refreshOrders() {
+            console.log('[DEBUG] 刷新订单...');
+            try {
+                // 获取所有交易对的订单
+                const response = await fetch('/api/orders?exchange=binance&limit=50&all=true');
+                const data = await response.json();
+                console.log('[DEBUG] 订单响应:', data);
+
+                if (data.orders && data.orders.length > 0) {
+                    // 保留本地已创建但不在 API 返回中的订单（刚创建还未同步的）
+                    const localNewOrders = recentOrders.filter(localOrder =>
+                        !data.orders.some(apiOrder => apiOrder.id === localOrder.id)
+                    );
+
+                    // 转换为前端格式
+                    const apiOrders = data.orders.map(order => ({
+                        id: order.id,
+                        time: new Date(order.timestamp).toLocaleTimeString(),
+                        symbol: order.symbol,
+                        side: order.side,
+                        amount: order.amount,
+                        price: order.price,
+                        filled: order.filled,
+                        status: order.status
+                    }));
+
+                    // 合并：本地新订单 + API 订单，按时间倒序排列
+                    recentOrders = [...localNewOrders, ...apiOrders].sort((a, b) => {
+                        return new Date(b.time) - new Date(a.time);
+                    });
+
+                    // 只保留最近 100 条
+                    if (recentOrders.length > 100) {
+                        recentOrders = recentOrders.slice(0, 100);
+                    }
+                } else {
+                    // 空订单时清空本地订单（避免引擎重启后仍显示旧订单）
+                    if (currentEngineState === 'running') {
+                        recentOrders = [];
+                    }
+                    console.log('[DEBUG] 暂无订单数据');
+                }
+
+                // 始终渲染订单表格（包括空状态）
+                renderRecentOrders();
+
+            } catch (error) {
+                // 静默失败，保持本地订单显示
+                addLog('error', `获取订单历史失败：${error.message}`);
+            }
+        }
+
+        function clearOrders() {
+            recentOrders = [];
+            renderRecentOrders();
+            addLog('info', '已清空订单列表');
         }
 
         async function refreshStatus() {
             try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
+
+                // 更新引擎状态变量（用于判断状态变化）
+                const prevState = currentEngineState;
+                currentEngineState = data.state;
 
                 document.getElementById('engineState').textContent = data.state === 'running' ? '运行中' : '已停止';
                 document.getElementById('engineState').className = `text-2xl font-bold ${data.state === 'running' ? 'text-success' : 'text-danger'}`;
@@ -900,7 +1683,30 @@
                 document.getElementById('totalTrades').textContent = data.stats?.total_trades || 0;
                 document.getElementById('errorCount').textContent = data.stats?.errors || 0;
 
+                // 更新交易所连接状态（只要有一个交易所已连接就显示已连接）
+                let anyConnected = false;
+                if (data.exchanges) {
+                    for (const exch of Object.values(data.exchanges)) {
+                        if (exch.connected) {
+                            anyConnected = true;
+                            break;
+                        }
+                    }
+                }
+                updateConnectionStatus(anyConnected);
+
                 updateEngineStatus(data.state);
+
+                // 如果引擎停止且之前是运行状态，清空余额和订单
+                if (data.state === 'stopped' && prevState === 'running') {
+                    console.log('[DEBUG] 检测到引擎停止，清空余额和订单数据');
+                    balancesByExchange = {};
+                    exchangePageInfo = {};
+                    currentBalanceExchange = null;
+                    recentOrders = [];
+                    renderBalanceTable();
+                    renderRecentOrders();
+                }
             } catch (error) {
                 // 静默失败
             }
@@ -908,6 +1714,11 @@
 
         // ============ 操作函数 ============
         function startEngine() {
+            console.log('startEngine called, socket:', socket, 'connected:', socket?.connected);
+            if (!socket || !socket.connected) {
+                addLog('error', 'WebSocket 未连接');
+                return;
+            }
             socket.emit('start_engine');
             addLog('info', '正在启动交易引擎...');
         }
@@ -915,6 +1726,12 @@
         function stopEngine() {
             socket.emit('stop_engine');
             addLog('warning', '正在停止交易引擎...');
+        }
+
+        function toggleExchange(exchangeName) {
+            // 根据当前状态决定连接还是断开
+            socket.emit('toggle_exchange', { exchange: exchangeName });
+            addLog('info', `正在切换 ${exchangeName} 连接状态...`);
         }
 
         function disconnectExchange(exchangeName) {
@@ -927,12 +1744,11 @@
             addLog('info', `正在连接 ${exchangeName}...`);
         }
 
-        function createOrder(type, side) {
-            const prefix = type === 'market' ? 'market' : 'limit';
-            const exchange = document.getElementById(`${prefix}Exchange`).value;
-            const symbol = document.getElementById(`${prefix}Symbol`).value;
-            const amount = parseFloat(document.getElementById(`${prefix}Amount`).value);
-            const price = type === 'limit' ? parseFloat(document.getElementById(`${prefix}Price`).value) : null;
+        function createOrder(side) {
+            const exchange = document.getElementById('orderExchange').value;
+            const symbol = document.getElementById('orderSymbol').value;
+            const amount = parseFloat(document.getElementById('orderAmount').value);
+            const price = currentOrderType === 'limit' ? parseFloat(document.getElementById('orderPrice').value) : null;
 
             // 验证
             if (!symbol) {
@@ -943,7 +1759,7 @@
                 addLog('error', '请输入有效的数量');
                 return false;
             }
-            if (type === 'limit' && (!price || price <= 0)) {
+            if (currentOrderType === 'limit' && (!price || price <= 0)) {
                 addLog('error', '请输入有效的价格');
                 return false;
             }
@@ -952,20 +1768,25 @@
                 exchange,
                 symbol,
                 side,
-                type,
+                type: currentOrderType,
                 amount,
                 price
             };
 
-            addLog('info', `发送${side === 'buy' ? '买入' : '卖出'}订单：${amount} ${symbol} @ ${type === 'market' ? '市价' : price}`);
+            console.log('[DEBUG] 创建订单:', orderData);
+            addLog('info', `发送${side === 'buy' ? '买入' : '卖出'}订单：${amount} ${symbol} @ ${currentOrderType === 'market' ? '市价' : price}`);
 
             fetch('/api/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             })
-            .then(res => res.json())
+            .then(res => {
+                console.log('[DEBUG] 订单响应 status:', res.status);
+                return res.json();
+            })
             .then(data => {
+                console.log('[DEBUG] 订单响应数据:', data);
                 if (data.error) {
                     addLog('error', `订单失败：${data.error}`);
                 } else {
@@ -976,6 +1797,7 @@
                 }
             })
             .catch(error => {
+                console.error('[DEBUG] 订单请求失败:', error);
                 addLog('error', `请求失败：${error.message}`);
             });
 
@@ -1026,20 +1848,600 @@
             return parseFloat(num).toFixed(decimals);
         }
 
+        // ============ 分页函数 ============
+        // Ticker 分页
+        function prevTickerPage() {
+            if (tickerPagination.currentPage > 1) {
+                tickerPagination.currentPage--;
+                renderTickerTable();
+            }
+        }
+
+        function nextTickerPage() {
+            if (tickerPagination.currentPage < tickerPagination.totalPages) {
+                tickerPagination.currentPage++;
+                renderTickerTable();
+            }
+        }
+
+        // Balance 分页
+        function prevBalancePage() {
+            const pageInfo = exchangePageInfo[currentBalanceExchange];
+            if (pageInfo && pageInfo.currentPage > 1) {
+                pageInfo.currentPage--;
+                renderBalanceTable();
+            }
+        }
+
+        function nextBalancePage() {
+            const pageInfo = exchangePageInfo[currentBalanceExchange];
+            if (pageInfo && pageInfo.currentPage < pageInfo.totalPages) {
+                pageInfo.currentPage++;
+                renderBalanceTable();
+            }
+        }
+
+        // 渲染 Ticker 表格（带分页）
+        // 切换余额显示的交易所
+        function switchBalanceExchange(exchange) {
+            if (exchange === 'all') {
+                // 默认显示 Binance
+                currentBalanceExchange = 'binance';
+            } else {
+                currentBalanceExchange = exchange;
+            }
+            // 重置该交易所的分页
+            if (!exchangePageInfo[currentBalanceExchange]) {
+                exchangePageInfo[currentBalanceExchange] = { currentPage: 1, totalPages: 1 };
+            }
+            renderBalanceTable();
+        }
+
+        function renderTickerTable() {
+            const tbody = document.getElementById('tickerTable');
+            const startIndex = (tickerPagination.currentPage - 1) * TICKER_ITEMS_PER_PAGE;
+            const endIndex = startIndex + TICKER_ITEMS_PER_PAGE;
+            const pageData = allTickers.slice(startIndex, endIndex);
+
+            let html = '';
+            for (const ticker of pageData) {
+                if (ticker.error) {
+                    html += `<tr id="ticker-${ticker.symbol}"><td class="p-3 font-bold">${ticker.name}</td><td colspan="6" class="text-danger text-center">数据获取失败</td></tr>`;
+                } else {
+                    const data = ticker.data;
+                    const changeClass = (data.change || 0) >= 0 ? 'text-success' : 'text-danger';
+                    const changeSign = (data.change || 0) >= 0 ? '+' : '';
+                    html += `<tr id="ticker-${ticker.symbol}" class="hover:bg-gray-700/30 transition-colors">
+                        <td class="p-3 font-bold w-1/4">${ticker.name}</td>
+                        <td class="text-right p-3 ticker-price" data-price="${data.last}">${formatPrice(data.last)}</td>
+                        <td class="text-right p-3">${formatPrice(data.bid || 0)}</td>
+                        <td class="text-right p-3">${formatPrice(data.ask || 0)}</td>
+                        <td class="text-right p-3 text-gray-400">${formatPrice(data.high || 0)}</td>
+                        <td class="text-right p-3 text-gray-400">${formatPrice(data.low || 0)}</td>
+                        <td class="text-right p-3 ${changeClass}">${changeSign}${(data.change || 0).toFixed(2)}%</td>
+                    </tr>`;
+                }
+            }
+            tbody.innerHTML = html || '<tr><td colspan="7" class="text-center text-gray-500 py-8">暂无行情数据</td></tr>';
+
+            // 更新分页控件
+            updateTickerPaginationUI();
+        }
+
+        // 更新 Ticker 分页 UI
+        function updateTickerPaginationUI() {
+            document.getElementById('tickerCurrentPage').textContent = tickerPagination.currentPage;
+            document.getElementById('tickerTotalPages').textContent = tickerPagination.totalPages;
+            document.getElementById('tickerPrevBtn').disabled = tickerPagination.currentPage === 1;
+            document.getElementById('tickerNextBtn').disabled = tickerPagination.currentPage === tickerPagination.totalPages;
+        }
+
+        // 渲染 Balance 表格（带分页）
+        // 当前选中的交易所
+        let currentBalanceExchange = null;
+        let exchangePageInfo = {}; // 每个交易所的分页信息
+
+        // 当前选中的行情交易所
+        let currentTickerExchange = 'binance';
+
+        function switchTickerExchange(exchange) {
+            currentTickerExchange = exchange;
+            // 更新 defaultTickers 中的交易所
+            defaultTickers.forEach(t => t.exchange = exchange);
+            // 刷新行情
+            refreshTickers();
+            addLog('info', `切换到 ${exchange.toUpperCase()} 行情`);
+        }
+
+        function renderBalanceTable() {
+            const tbody = document.getElementById('balanceTable');
+
+            // 如果没有余额数据
+            if (Object.keys(balancesByExchange).length === 0) {
+                // 根据引擎状态显示不同提示
+                const message = currentEngineState === 'stopped'
+                    ? '引擎未启动，请先启动引擎'
+                    : '点击刷新按钮加载余额';
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-8">${message}</td></tr>`;
+                // 更新分页 UI（禁用按钮）
+                document.getElementById('balanceCurrentPage').textContent = '1';
+                document.getElementById('balanceTotalPages').textContent = '1';
+                document.getElementById('balancePrevBtn').disabled = true;
+                document.getElementById('balanceNextBtn').disabled = true;
+                return;
+            }
+
+            // 如果没有设置当前交易所，默认显示第一个有数据的交易所
+            if (!currentBalanceExchange || !balancesByExchange[currentBalanceExchange] || balancesByExchange[currentBalanceExchange].length === 0) {
+                currentBalanceExchange = Object.keys(balancesByExchange).find(
+                    ex => balancesByExchange[ex] && balancesByExchange[ex].length > 0
+                ) || Object.keys(balancesByExchange)[0];
+            }
+
+            // 更新交易所选择器
+            const selector = document.getElementById('balanceExchangeSelector');
+            if (selector) {
+                // 如果当前交易所是 binance 或 okx，直接设置
+                if (currentBalanceExchange === 'binance' || currentBalanceExchange === 'okx') {
+                    selector.value = currentBalanceExchange;
+                }
+            }
+
+            const currentData = balancesByExchange[currentBalanceExchange] || [];
+            
+            // 初始化该交易所的分页信息
+            if (!exchangePageInfo[currentBalanceExchange]) {
+                exchangePageInfo[currentBalanceExchange] = { currentPage: 1, totalPages: 1 };
+            }
+            
+            const pageInfo = exchangePageInfo[currentBalanceExchange];
+            const totalPages = Math.ceil(currentData.length / BALANCE_ITEMS_PER_PAGE) || 1;
+            pageInfo.totalPages = totalPages;
+            if (pageInfo.currentPage > totalPages) {
+                pageInfo.currentPage = 1;
+            }
+
+            // 计算当前页数据
+            const startIndex = (pageInfo.currentPage - 1) * BALANCE_ITEMS_PER_PAGE;
+            const endIndex = startIndex + BALANCE_ITEMS_PER_PAGE;
+            const pageData = currentData.slice(startIndex, endIndex);
+
+            // 生成 HTML
+            let html = '';
+            for (const item of pageData) {
+                html += `<tr>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">${currentBalanceExchange}</span></td>
+                    <td class="p-3">${item.currency}</td>
+                    <td class="p-3 text-right font-bold">${formatNumber(item.free, 4)}</td>
+                </tr>`;
+            }
+            
+            if (!html) {
+                html = '<tr><td colspan="3" class="text-center text-gray-500 py-4">暂无余额数据</td></tr>';
+            }
+            
+            tbody.innerHTML = html;
+
+            // 更新分页控件
+            updateBalancePaginationUI();
+        }
+
+        // 更新 Balance 分页 UI
+        function updateBalancePaginationUI() {
+            // 获取当前交易所的分页信息
+            const pageInfo = exchangePageInfo[currentBalanceExchange] || { currentPage: 1, totalPages: 1 };
+            
+            document.getElementById('balanceCurrentPage').textContent = pageInfo.currentPage;
+            document.getElementById('balanceTotalPages').textContent = pageInfo.totalPages;
+            document.getElementById('balancePrevBtn').disabled = pageInfo.currentPage === 1;
+            document.getElementById('balanceNextBtn').disabled = pageInfo.currentPage === pageInfo.totalPages;
+        }
+
+        // 添加币种模态框
+        function openAddSymbolModal() {
+            const modal = document.getElementById('addSymbolModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.getElementById('addSymbolInput').focus();
+
+                // 添加键盘响应：Enter 确认，Esc 取消
+                const handleKeyDown = (e) => {
+                    if (e.key === 'Enter') {
+                        document.removeEventListener('keydown', handleKeyDown);
+                        addSymbol();
+                    } else if (e.key === 'Escape') {
+                        document.removeEventListener('keydown', handleKeyDown);
+                        closeAddSymbolModal();
+                    }
+                };
+                document.addEventListener('keydown', handleKeyDown);
+            }
+        }
+
+        function closeAddSymbolModal() {
+            const modal = document.getElementById('addSymbolModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.getElementById('addSymbolInput').value = '';
+            }
+        }
+
+        function addSymbol() {
+            const input = document.getElementById('addSymbolInput');
+            const symbol = input.value.trim().toUpperCase();
+            const exchange = document.getElementById('addSymbolExchange').value;
+
+            if (!symbol) {
+                addLog('error', '请输入交易对');
+                return;
+            }
+
+            // 添加到数据库
+            fetch('/api/symbols', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exchange, symbol, name: symbol })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.id) {
+                    // 添加到 defaultTickers
+                    const exists = defaultTickers.some(t => t.symbol === symbol && t.exchange === exchange);
+                    if (!exists) {
+                        defaultTickers.push({ exchange, symbol, name: symbol });
+                        addLog('success', `已添加 ${symbol} 到自选`);
+                        // 重置分页并刷新行情
+                        tickerPagination.currentPage = 1;
+                        refreshTickers();
+                        // 同时刷新余额以显示新币种的余额
+                        refreshBalance();
+                    } else {
+                        addLog('warning', `交易对 ${symbol} 已存在`);
+                    }
+                } else {
+                    addLog('error', `添加失败：${data.error || '未知错误'}`);
+                }
+            })
+            .catch(err => {
+                addLog('error', `添加失败：${err.message}`);
+            });
+
+            closeAddSymbolModal();
+        }
+
+        // ============ 策略管理函数 ============
+        function openStrategyModal() {
+            const modal = document.getElementById('strategyModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeStrategyModal() {
+            const modal = document.getElementById('strategyModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function updateStrategyParams() {
+            // 根据策略类型更新参数提示（简化实现）
+        }
+
+        function addStrategy() {
+            const strategyType = document.getElementById('strategyType').value;
+            const symbol = document.getElementById('strategySymbol').value;
+            const timeframe = document.getElementById('strategyTimeframe').value;
+            const positionSize = document.getElementById('strategyPositionSize').value;
+
+            addLog('success', `添加策略：${strategyType} ${symbol}`);
+            closeStrategyModal();
+            loadStrategies();
+        }
+
+        function loadStrategies() {
+            // 简化实现：显示示例数据
+            const container = document.getElementById('strategyList');
+            if (container) {
+                container.innerHTML = `
+                    <div class="p-3 flex items-center justify-between hover:bg-gray-700/30">
+                        <div>
+                            <div class="font-medium text-primary">SMA 交叉</div>
+                            <div class="text-xs text-gray-500">BTC/USDT 4h</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">运行中</span>
+                            <button class="text-xs px-2 py-1 rounded border border-danger text-danger hover:bg-danger/10" onclick="stopStrategy('sma_cross')">停止</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function stopStrategy(name) {
+            addLog('info', `停止策略：${name}`);
+        }
+
+        // ============ 条件单函数 ============
+        function openConditionOrderModal() {
+            const modal = document.getElementById('conditionOrderModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeConditionOrderModal() {
+            const modal = document.getElementById('conditionOrderModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function submitConditionOrder() {
+            const symbol = document.getElementById('conditionSymbol').value;
+            const conditionType = document.getElementById('conditionType').value;
+            const triggerPrice = document.getElementById('triggerPrice').value;
+            const side = document.getElementById('conditionSide').value;
+            const amount = document.getElementById('conditionAmount').value;
+
+            addLog('success', `创建条件单：${symbol} ${conditionType}=${triggerPrice} ${side} ${amount}`);
+            closeConditionOrderModal();
+        }
+
+        // ============ 网格交易函数 ============
+        function openGridTradingModal() {
+            const modal = document.getElementById('gridTradingModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeGridTradingModal() {
+            const modal = document.getElementById('gridTradingModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function submitGridTrading() {
+            const symbol = document.getElementById('gridSymbol').value;
+            const lowerPrice = document.getElementById('gridLowerPrice').value;
+            const upperPrice = document.getElementById('gridUpperPrice').value;
+            const gridNum = document.getElementById('gridNum').value;
+            const amount = document.getElementById('gridAmount').value;
+
+            addLog('success', `创建网格交易：${symbol} [${lowerPrice}-${upperPrice}] ${gridNum}格 ${amount}USDT`);
+            closeGridTradingModal();
+        }
+
+        // 当前订单类型
+        let currentOrderType = 'market';
+
+        // ============ K 线图表 ============
+        let klineChart = null;
+        let klineSeries = null;
+        let currentKlineSymbol = 'BTC/USDT';
+        let currentKlineInterval = '4h';
+        let currentKlineSubscription = null;  // 当前 K 线订阅状态
+
+        // 初始化 K 线图表
+        function initKlineChart() {
+            const container = document.getElementById('klineChart');
+            if (!container) return;
+
+            // 创建图表实例
+            klineChart = LightweightCharts.createChart(container, {
+                width: container.clientWidth,
+                height: container.clientHeight,
+                layout: {
+                    background: { color: '#0f172a' },
+                    textColor: '#94a3b8',
+                },
+                grid: {
+                    vertLines: { color: '#1e293b' },
+                    horzLines: { color: '#1e293b' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                },
+                timeScale: {
+                    borderColor: '#334155',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+                rightPriceScale: {
+                    borderColor: '#334155',
+                },
+            });
+
+            // 创建 K 线系列
+            klineSeries = klineChart.addCandlestickSeries({
+                upColor: '#3fb950',
+                downColor: '#f85149',
+                borderUpColor: '#3fb950',
+                borderDownColor: '#f85149',
+                wickUpColor: '#3fb950',
+                wickDownColor: '#f85149',
+            });
+
+            // 自适应大小
+            const resizeObserver = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    klineChart.applyOptions({ width, height });
+                }
+            });
+            resizeObserver.observe(container);
+
+            // 加载默认数据
+            loadKlineChart();
+        }
+
+        // 加载 K 线数据并更新图表
+        async function loadKlineChart() {
+            if (!klineChart || !klineSeries) {
+                initKlineChart();
+            }
+
+            const symbol = document.getElementById('klineSymbolSelector').value;
+            const interval = currentKlineInterval;
+
+            currentKlineSymbol = symbol;
+
+            try {
+                const response = await fetch(`/api/klines?symbol=${encodeURIComponent(symbol)}&interval=${interval}&limit=200`);
+                const data = await response.json();
+
+                if (data.klines && data.klines.length > 0) {
+                    // 转换为 TradingView 格式
+                    const klineData = data.klines.map(k => ({
+                        time: k.time / 1000, // 转换为秒级时间戳
+                        open: k.open,
+                        high: k.high,
+                        low: k.low,
+                        close: k.close,
+                    }));
+
+                    klineSeries.setData(klineData);
+
+                    // 更新标题
+                    const now = new Date();
+                    const lastKline = klineData[klineData.length - 1];
+                    if (lastKline) {
+                        addLog('info', `K 线图表已更新：${symbol} ${interval}`);
+                    }
+                } else {
+                    addLog('warning', `暂无 K 线数据：${symbol} ${interval}`);
+                }
+            } catch (error) {
+                addLog('error', `加载 K 线失败：${error.message}`);
+            }
+        }
+
+        function subscribeKlines(symbol, interval) {
+            console.log('[DEBUG] 订阅 K 线:', symbol, interval);
+
+            // 先取消旧订阅
+            if (currentKlineSubscription) {
+                console.log('[DEBUG] 取消旧订阅:', currentKlineSubscription);
+                socket.emit('unsubscribe_klines', currentKlineSubscription);
+            }
+
+            // 获取当前交易所（从 UI 或默认）
+            const exchange = document.getElementById('tickerExchangeSelector')
+                ? document.getElementById('tickerExchangeSelector').value
+                : 'binance';
+
+            // 创建新订阅
+            currentKlineSubscription = {
+                exchange: exchange,
+                symbol: symbol,
+                interval: interval
+            };
+
+            socket.emit('subscribe_klines', currentKlineSubscription);
+        }
+
+        function unsubscribeKlines() {
+            if (currentKlineSubscription) {
+                console.log('[DEBUG] 取消 K 线订阅:', currentKlineSubscription);
+                socket.emit('unsubscribe_klines', currentKlineSubscription);
+                currentKlineSubscription = null;
+            }
+        }
+
         // ============ 初始化 ============
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化 WebSocket
             initSocket();
 
-            // 定时刷新
-            setInterval(refreshStatus, 3000);  // 3 秒刷新状态
-            setInterval(refreshRisk, 5000);    // 5 秒刷新风控
-            setInterval(refreshTickers, 4000); // 4 秒刷新行情
+            // 初始化订单类型 Tab 切换
+            initOrderTypeTabs();
+
+            // 初始化 K 线时间周期按钮
+            initKlineTimeframeButtons();
+
+            // 初始化 K 线图表
+            initKlineChart();
+
+            // 从数据库加载交易对
+            fetch('/api/symbols')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.symbols && data.symbols.length > 0) {
+                        // 替换默认交易对
+                        defaultTickers.length = 0;
+                        data.symbols.forEach(s => {
+                            defaultTickers.push({ exchange: s.exchange, symbol: s.symbol, name: s.name });
+                        });
+                        addLog('info', `从数据库加载了 ${defaultTickers.length} 个交易对`);
+                    }
+                    // 加载行情
+                    refreshTickers();
+                })
+                .catch(err => {
+                    addLog('error', `加载交易对失败：${err.message}`);
+                    refreshTickers();
+                });
 
             // 初始加载
             addLog('info', '页面加载完成');
-            refreshStatus();
+            refreshBalance(); // 加载账户余额
+            refreshOrders(); // 加载真实订单历史
+            loadStrategies(); // 加载策略列表
         });
+
+        // 订单类型 Tab 切换
+        function initOrderTypeTabs() {
+            const tabButtons = document.querySelectorAll('.order-type-tab');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const orderType = this.getAttribute('data-order-type');
+                    currentOrderType = orderType;
+
+                    // 移除所有激活状态
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('text-primary', 'border-primary');
+                        btn.classList.add('text-gray-400', 'border-transparent');
+                    });
+
+                    // 激活当前按钮
+                    this.classList.remove('text-gray-400', 'border-transparent');
+                    this.classList.add('text-primary', 'border-primary');
+
+                    // 显示/隐藏价格字段
+                    const priceField = document.getElementById('priceField');
+                    if (orderType === 'limit') {
+                        priceField.style.display = 'block';
+                    } else {
+                        priceField.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // 初始化 K 线时间周期按钮
+        function initKlineTimeframeButtons() {
+            const buttons = document.querySelectorAll('.kline-timeframe-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有激活状态
+                    buttons.forEach(btn => {
+                        btn.classList.remove('active', 'text-primary', 'border-primary');
+                        btn.classList.add('text-gray-400', 'border-gray-600');
+                    });
+
+                    // 激活当前按钮
+                    this.classList.remove('text-gray-400', 'border-gray-600');
+                    this.classList.add('active', 'text-primary', 'border-primary');
+
+                    // 更新当前周期并加载数据
+                    currentKlineInterval = this.getAttribute('data-interval');
+                    loadKlineChart();
+                });
+            });
+        }
     </script>
 </body>
 </html>
