@@ -1228,6 +1228,7 @@ def handle_connect(*args):
 def handle_subscribe_klines(data):
     """处理 K 线订阅请求"""
     from loguru import logger
+    import traceback
 
     exchange_name = data.get("exchange", "binance")
     symbol = data.get("symbol")
@@ -1254,6 +1255,7 @@ def handle_subscribe_klines(data):
 
     # 生成订阅 key
     sub_key = f"{exchange_name}:{symbol}:{interval}"
+    logger.info(f"准备订阅 K 线：{sub_key}")
 
     # 如果已订阅，先取消
     if sub_key in _active_kline_subscriptions:
@@ -1283,11 +1285,13 @@ def handle_subscribe_klines(data):
     try:
         # 使用后台事件循环
         bg_loop = _ensure_background_loop()
+        logger.info(f"开始在后台事件循环中订阅：{sub_key}")
         future = asyncio.run_coroutine_threadsafe(
             exch.subscribe_klines(symbol, interval, kline_callback),
             bg_loop
         )
-        future.result(timeout=5)
+        result = future.result(timeout=5)
+        logger.info(f"subscribe_klines 返回结果：{result}")
 
         _active_kline_subscriptions[sub_key] = {
             "exchange": exchange_name,
@@ -1303,8 +1307,10 @@ def handle_subscribe_klines(data):
             "interval": interval,
         })
     except Exception as e:
+        error_details = traceback.format_exc()
         logger.error(f"K 线订阅失败：{e}")
-        emit("error", {"message": f"订阅失败：{str(e)}"})
+        logger.error(f"详细错误：{error_details}")
+        emit("error", {"message": f"订阅失败：{str(e)} - {type(e).__name__}"})
 
 
 @socketio.on("unsubscribe_klines")
