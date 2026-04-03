@@ -1155,6 +1155,27 @@ async def _periodic_ticker_push():
             logger.error(f"定期推送行情失败：{e}")
 
 
+async def _unsubscribe_kline(sub_key: str):
+    """取消 K 线订阅"""
+    if sub_key not in _active_kline_subscriptions:
+        return
+
+    sub = _active_kline_subscriptions[sub_key]
+    exchange_name = sub["exchange"]
+    symbol = sub["symbol"]
+    interval = sub["interval"]
+
+    if engine and exchange_name in engine.exchanges:
+        exch = engine.exchanges[exchange_name]
+        try:
+            await exch.unsubscribe_klines(symbol, interval)
+            logger.info(f"K 线已取消订阅：{sub_key}")
+        except Exception as e:
+            logger.error(f"取消 K 线订阅失败 {sub_key}: {e}")
+
+    del _active_kline_subscriptions[sub_key]
+
+
 @socketio.on("connect")
 def handle_connect(*args):
     """客户端连接"""
