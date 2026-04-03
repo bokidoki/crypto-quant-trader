@@ -2430,6 +2430,14 @@
             refreshBalance(); // 加载账户余额
             refreshOrders(); // 加载真实订单历史
             loadStrategies(); // 加载策略列表
+
+            // 页面卸载时清理订阅
+            window.addEventListener('beforeunload', () => {
+                if (currentKlineSubscription) {
+                    console.log('[DEBUG] 页面卸载，取消 K 线订阅');
+                    socket.emit('unsubscribe_klines', currentKlineSubscription);
+                }
+            });
         });
 
         // 订单类型 Tab 切换
