@@ -187,6 +187,11 @@ class BaseExchange(ABC):
     async def get_open_orders(self, symbol: Optional[str] = None) -> List[Order]:
         """获取未完成订单"""
         pass
+
+    @abstractmethod
+    async def get_orders(self, symbol: Optional[str] = None, limit: int = 50) -> List[Order]:
+        """获取历史订单（包括已完成和已取消）"""
+        pass
     
     @abstractmethod
     async def subscribe_ticker(self, symbol: str, callback):

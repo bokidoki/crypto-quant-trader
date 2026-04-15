@@ -5,10 +5,12 @@
 - TradeModel: 交易记录
 - PositionModel: 持仓记录
 - StrategyModel: 策略状态
+- SymbolWatchModel: 关注的交易对
 """
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+from dataclasses import dataclass
 
 from sqlalchemy import DECIMAL, String, Text
 from sqlalchemy.orm import Mapped, DeclarativeBase, mapped_column
@@ -56,9 +58,26 @@ class KLineModel(Base):
     low_price: Mapped[Decimal] = mapped_column(DECIMAL(32, 16), comment="最低价")
     close_price: Mapped[Decimal] = mapped_column(DECIMAL(32, 16), comment="收盘价")
     volume: Mapped[Decimal] = mapped_column(DECIMAL(32, 16), comment="成交量")
+    quote_volume: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(32, 16), default=Decimal(0), comment="成交额")
+    trades_count: Mapped[Optional[int]] = mapped_column(default=0, comment="成交笔数")
 
     def __repr__(self) -> str:
         return f"<KLine(symbol={self.symbol}, interval={self.interval}, open_time={self.open_time})>"
+
+
+@dataclass
+class KLine:
+    """K 线数据类（与交易所接口保持一致）"""
+    symbol: str
+    interval: str
+    timestamp: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+    quote_volume: float = 0.0
+    trades_count: int = 0
 
 
 class TradeModel(Base):
@@ -120,3 +139,24 @@ class StrategyModel(Base):
 
     def __repr__(self) -> str:
         return f"<Strategy(name={self.name}, is_active={self.is_active})>"
+
+
+class SymbolWatchModel(Base):
+    """关注的交易对模型"""
+
+    __tablename__ = "symbol_watch"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    exchange: Mapped[str] = mapped_column(String(32), index=True, comment="交易所")
+    symbol: Mapped[str] = mapped_column(String(32), comment="交易对")
+    name: Mapped[Optional[str]] = mapped_column(String(64), comment="显示名称")
+    is_active: Mapped[bool] = mapped_column(default=True, comment="是否激活")
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, comment="添加时间")
+    updated_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        comment="更新时间"
+    )
+
+    def __repr__(self) -> str:
+        return f"<SymbolWatch(exchange={self.exchange}, symbol={self.symbol})>"

@@ -141,6 +141,10 @@ class BaseStrategy(ABC):
             self.positions.append(order)
             self.stats["total_trades"] += 1
             logger.info(f"买入订单：{order.id} {amount} {self.symbol}")
+
+            # 保存到数据库（新增）
+            await self._save_order_to_db(order)
+
             return order
         except Exception as e:
             logger.error(f"买入失败：{e}")
@@ -172,10 +176,41 @@ class BaseStrategy(ABC):
                 price=price,
             )
             logger.info(f"卖出订单：{order.id} {amount} {self.symbol}")
+
+            # 保存到数据库（新增）
+            await self._save_order_to_db(order)
+
             return order
         except Exception as e:
             logger.error(f"卖出失败：{e}")
             return None
+
+    async def _save_order_to_db(self, order: Order):
+        """
+        将订单保存到数据库（新增）
+
+        Args:
+            order: 订单对象
+        """
+        try:
+            from src.data.database import get_db_manager
+            from src.data.repository import OrderRepository
+            from decimal import Decimal
+
+            db_manager = get_db_manager()
+            async with db_manager.get_session() as session:
+                repo = OrderRepository(session)
+                await repo.create(
+                    order_id=order.id,
+                    symbol=order.symbol,
+                    side=order.side.value,
+                    quantity=Decimal(str(order.amount)),
+                    price=Decimal(str(order.price or 0)),
+                    status=order.status.value,
+                )
+                logger.debug(f"订单已保存到数据库：{order.id}")
+        except Exception as e:
+            logger.error(f"保存订单到数据库失败：{e}")
 
     async def close_position(self, order_id: Optional[str] = None, percentage: float = 1.0):
         """
